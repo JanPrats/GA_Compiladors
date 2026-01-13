@@ -1,5 +1,5 @@
 # COMPILADORS
-  ## Team leaders of each TM
+  ## 1. Team leaders of each TM
 
 - P1: Jan 
 
@@ -12,7 +12,7 @@
 
 ---
 
-## Overview
+## 2. Overview
 
 This project template is designed to facilitate modular C development with CMake and VS Code 
 with github source control and testing with actions. It enables individual module development,
@@ -26,7 +26,7 @@ directory. The log files are named with the time to avoid overwritting the diffe
 
 ---
 
-## Project Structure
+## 3. Project Structure
 ```
 / (root)
 ├── CMakeLists.txt     # Top-level CMake configuration (compiles several independent programs)
@@ -65,7 +65,7 @@ directory. The log files are named with the time to avoid overwritting the diffe
 
 ---
 
-## Tools and Configuration
+## 4. Tools and Configuration
 
 ### CMake
 
@@ -94,7 +94,7 @@ This allows to select the proper compiler and generator in VS Code easily.
 
 ---
 
-## Building the Project
+## 5. Building the Project
 
 1. Open the project folder in VS Code.
 2. Select the CMake Kit `MSYS2 UCRT64 (preconfigured)` via the CMake extension.
@@ -104,7 +104,7 @@ This allows to select the proper compiler and generator in VS Code easily.
 
 ---
 
-## Running and Debugging
+## 6. Running and Debugging
 
 - Debug configurations (`launch.json`) are provided for:
   - The main program (`modules_template_main.exe`).
@@ -113,7 +113,7 @@ This allows to select the proper compiler and generator in VS Code easily.
 
 ---
 
-## How to Extend the Template
+## 7. How to Extend the Template
 
 - Add new modules by creating a new folder under `src/` with its own `CMakeLists.txt`.
 - Add corresponding test files under `tests/` and update the tests `CMakeLists.txt`.
@@ -121,7 +121,7 @@ This allows to select the proper compiler and generator in VS Code easily.
 
 ---
 
-## Notes
+## 8. Notes
 
 - The `build/` directory is ignored by git to keep build artifacts out of source control.
 - The `logs/` directory can be ignored by git depending if you want to share your output files to the team.
