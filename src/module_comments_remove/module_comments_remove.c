@@ -1,150 +1,117 @@
+// -----------------------------------------------------------------------------
+// Jan Prats Soler
+// Module: module_comments_remove
+//
+// This module is responsible for detecting and processing C-style comments.
+// It supports:
+//   - Single-line comments (//)
+//   - Multi-line comments (/* ... */)
+//
+// Depending on the parser configuration, comments can be:
+//   - Removed entirely
+//   - Preserved and copied to the output (if flag -c == TRU)
+// -----------------------------------------------------------------------------
+
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "./module_comments_remove.h"
 #include "../module_parser/parser.h"
 
+// -----------------------------------------------------------------------------
+// process_comment
+//
+// Detects and processes a comment starting at the current parser position.
+//
+// Parameters:
+//   state           - Pointer to the current parser state
+//   current_char    - Current character being analyzed
+//   next_char       - Lookahead character (next in input stream)
+//   copy_to_output  - Indicates whether output writing is enabled
+//
+// Returns:
+//   1 if a comment was detected and processed
+//   0 if the current characters do not form a comment
+// -----------------------------------------------------------------------------
+int process_comment(ParserState* state, char current_char, char next_char, bool copy_to_output) {
 
-void module_comments_run(void) {
-    printf("Loaded module_comments: comments removal module\n");
-}
+    // -------------------------------------------------------------------------
+    // Single-line comment: //
+    // -------------------------------------------------------------------------
+    if (current_char == '/' && next_char == '/') {
 
-#include <stdbool.h>
+        // Consume the second '/'
+        read_char(state);
 
-/*
-==========================================================
- FUNCIONS QUE EL PARSER PROPORCIONA
-==========================================================
-El mòdul de comentaris NO sap res del fitxer.
-Només consumeix caràcters via el parser.
-*/
-char    parser_next_char(void);
-void    parser_copy_char(char c);
+        // Write the comment start only if comments are not being removed
+        if (!state->remove_comments && copy_to_output) {
+            fprintf(state->output_file, "//");
+        }
 
-/*
-==========================================================
- Ignora un comentari de línia //
-==========================================================
-Consumeix caràcters fins trobar '\n'
-*/
-static void skip_line_comment(void)
-{
-    char c;
+        // Read characters until end-of-line or end-of-file
+        char c;
+        while ((c = read_char(state)) && c != '\n' && c != '\0') {
+            if (!state->remove_comments && copy_to_output) {
+                fputc(c, state->output_file);
+            }
+        }
 
-    while ((c = parser_next_char()) != '\n')
-        ;
-}
+        // Preserve the newline character if it exists
+        if (c == '\n') {
+            if (!state->remove_comments && copy_to_output) {
+                fputc('\n', state->output_file);
+            }
+        }
 
-/*
-==========================================================
- Copia un comentari de línia //
-==========================================================
-Copia tot fins '\n'
-*/
-static void copy_line_comment(void)
-{
-    char c;
-
-    // Ja tenim "//"
-    parser_copy_char('/');
-    parser_copy_char('/');
-
-    while ((c = parser_next_char()) != '\n')
-        parser_copy_char(c);
-
-    parser_copy_char('\n');
-}
-
-/*
-==========================================================
- Ignora un comentari de bloc /* ... * /
-==========================================================
-Consumeix fins detectar */
-
-static void skip_block_comment(void)
-{
-    char c;
-    char prev = 0;
-
-    while (1)
-    {
-        c = parser_next_char();
-        if (prev == '*' && c == '/')
-            break;
-        prev = c;
-    }
-}
-
-/*
-==========================================================
- Copia un comentari de bloc /* ... * /
-==========================================================
-Copia fins detectar */
-static void copy_block_comment(void)
-{
-    char c;
-    char prev = 0;
-
-    // Ja tenim "/*"
-    parser_copy_char('/');
-    parser_copy_char('*');
-
-    while (1)
-    {
-        c = parser_next_char();
-        parser_copy_char(c);
-
-        if (prev == '*' && c == '/')
-            break;
-
-        prev = c;
-    }
-}
-
-/*
-==========================================================
- comment_handle
-==========================================================
-FUNCIO PRINCIPAL DEL MÒDUL
-
-PARAMETRES:
-- first : sempre serà '/'
-- flag_c: indica si cal copiar comentaris
-
-RETORN:
-- true  -> era un comentari
-- false -> NO era un comentari
-*/
-bool comment_handle(char first, bool flag_c)
-{
-    char next;
-
-    (void)first;
-
-    // Llegim el següent caràcter
-    next = parser_next_char();
-
-    // CAS //
-    if (next == '/')
-    {
-        if (flag_c)
-            copy_line_comment();
-        else
-            skip_line_comment();
-        return true;
+        return 1; // Comment processed
     }
 
-    // CAS /* */
-    if (next == '*')
-    {
-        if (flag_c)
-            copy_block_comment();
-        else
-            skip_block_comment();
-        return true;
+    // -------------------------------------------------------------------------
+    // Multi-line comment: /* ... */
+    // -------------------------------------------------------------------------
+    if (current_char == '/' && next_char == '*') {
+
+        // Consume the '*'
+        read_char(state);
+
+        // Write the comment start if comments are preserved
+        if (!state->remove_comments && copy_to_output) {
+            fprintf(state->output_file, "/*");
+        }
+
+        // Read characters until the closing sequence "*/" is found
+        char prev = '\0';
+        char c;
+
+        while ((c = read_char(state)) != '\0') {
+
+            // Detect end of multi-line comment
+            if (prev == '*' && c == '/') {
+                if (!state->remove_comments && copy_to_output) {
+                    fputc('/', state->output_file);
+                }
+                return 1; // Comment processed
+            }
+
+            // Copy comment content if required
+            if (!state->remove_comments && copy_to_output) {
+                fputc(c, state->output_file);
+            }
+
+            prev = c;
+        }
+
+        // If end-of-file is reached without closing the comment, emit a warning
+        fprintf(stderr,
+                "Warning: Unclosed multi-line comment in %s:%d\n",
+                state->current_filename,
+                state->current_line);
+
+        return 1; // Comment was detected, even if malformed
     }
 
-    /*
-    No era un comentari.
-    El parser haurà de gestionar '/' i next com a codi normal.
-    */
-    return false;
+    // -------------------------------------------------------------------------
+    // Not a comment
+    // -------------------------------------------------------------------------
+    return 0;
 }

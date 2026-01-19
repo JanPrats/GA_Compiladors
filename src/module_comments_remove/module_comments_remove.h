@@ -1,14 +1,14 @@
+//Jan Prats Soler - Module_comments_remove
+
 #ifndef MODULE_COMMENTS_H
 #define MODULE_COMMENTS_H
 
 #include "../main.h"
+#include <stdbool.h>
 
-/*
- * The comments module removes all comments from the source code
- * so they do not affect compilation.
- */
+typedef struct ParserState ParserState;
 
-void module_comments_run(void);
-bool    comment_handle(char first, bool flag_c);
+int process_comment(ParserState* state, char current_char, char next_char, bool copy_to_output);
 
 #endif
+
