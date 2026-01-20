@@ -2,20 +2,19 @@
 #define MODULE_MACROS_H
 
 #include "../main.h"
+#include <stdbool.h>
 
-/*
- * The macros module expands macros by replacing
- * macro invocations with their defined replacements.
- */
+// Parser initialization and cleanup
+ParserState* init_parser(const char* input_file, const char* output_file, PreprocessorFlags* flags);
+void cleanup_parser(ParserState* state);
 
-// Inicialitza el parser amb fitxers d'entrada i sortida
-void    parser_init(FILE *input, FILE *output);
+// Main parsing function
+int parse_until(ParserState* state, const char* stop_symbol, bool copy_to_output);
 
-// Bucle principal del parser
-void    parser_run(bool flag_c);
+// Helper functions for character/word reading
+char read_char(ParserState* state);
+char peek_char(ParserState* state);
 
-// Funcions que utilitza el module_comments_remove
-char    parser_next_char(void);
-void    parser_copy_char(char c);
 
 #endif
+
