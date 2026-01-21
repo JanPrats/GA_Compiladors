@@ -118,3 +118,41 @@ char peek_char(ParserState* state) {
     // Return null character if end of file is reached
     return '\0';
 }
+
+// Puts one character back into the parser stream. We only allow ONE character of lookahead.
+//WHEN TO USE: when the parser reads one character too far and needs to undo that read so another function can handle it.
+void unread_char(ParserState* state, char c) {
+    state->lookahead = c;
+    state->has_lookahead = true;
+
+    /* If we put back a newline, we must also restore the line counter */
+    if (c == '\n') {
+        state->current_line--;
+    }
+
+//Checks if a character is considered whitespace (are used to separate tokens, are ignored by the parser)
+bool is_whitespace(char c) {
+    return (
+        c == ' '  ||   /* space */
+        c == '\t' ||   /* tab */
+        c == '\n' ||   /* newline */
+        c == '\r'      /* carriage return */
+    );
+}
+
+//Checks if the character can be part of an identifier (identifier may contain: letter,digits or underscode)
+bool is_identifier_char(char c) {
+    return isalnum(c) || c == '_';
+}
+
+//Skips all whitespace in the input stream.
+//Moves the parser forward until a non-whitespace character is found.
+void skip_whitespace(ParserState* state) {
+    char c;
+
+    while ((c = peek_char(state)) && is_whitespace(c)) {
+        read_char(state);
+    }
+}
+
+
