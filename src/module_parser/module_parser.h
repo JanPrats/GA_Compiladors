@@ -58,6 +58,10 @@ int parse_until(ParserState* state, const char* stop_symbol, bool copy_to_output
 // Helper functions for character/word reading
 char read_char(ParserState* state);
 char peek_char(ParserState* state);
+void unread_char(ParserState* state, char c);
+void skip_whitespace(ParserState* state);
+bool is_whitespace(char c);
+bool is_identifier_char(char c);
 
 
 #endif // MODULE_PARSER_H
