@@ -129,6 +129,7 @@ void unread_char(ParserState* state, char c) {
     if (c == '\n') {
         state->current_line--;
     }
+}
 
 //Checks if a character is considered whitespace (are used to separate tokens, are ignored by the parser)
 bool is_whitespace(char c) {
