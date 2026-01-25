@@ -6,13 +6,15 @@ FILE* ofile = NULL; // The output handler for the project run (same variable nam
 int main(int argc, char *argv[]) {
     int n = 0;
 
+    errors_init();
+
     ofile = stdout; // Default output to stdout
     ofile = set_output_test_file(PROJOUTFILENAME);
 
     fprintf(ofile, "Starting module args ...\n");
     
     ArgFlags* flags = process_arguments(argc, argv);
-    if (!flags) { //Something went wrong since module_args did not return the flags
+    if (!flags) { //Something wesnt wrong since module_args did not return the flags
         return 1;
     }
 
@@ -56,8 +58,11 @@ int main(int argc, char *argv[]) {
     printf("All modules executed successfully!\n\n");
     fprintf(ofile, "All modules executed successfully!\n\n");
 
+    errors_finalize();
 
-
+    if (errors_count() > 0) {
+        return 1; // Devuelve error al sistema
+    }
 
     fclose(ofile); 
     return 0;

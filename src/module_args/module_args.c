@@ -21,6 +21,7 @@
 
 #include "./module_args.h"
 #include "../module_parser/module_parser.h"
+#include "../module_errors/module_errors.h"
 
 void print_arguments(int argc, char *argv[]) {
     fprintf(ofile, "Arguments received (%d):\n", argc);
@@ -66,7 +67,9 @@ ArgFlags* process_arguments(int argc, char *argv[]) {
         } else if (argv[i][0] != '-') {
             input_filename = argv[i];} // We assume if it is not "-"" it is not any flag but the input_file. In case this changes we would change this part
         else {
-            fprintf(stderr, "Error: unknown flag '%s'. The preprocessing will continue as if this flag didn't exist (remember to use -help for more info)\n", argv[i]); // In case it is a flag but non of the ones we know, wew ill procede with the preprocessing still
+            char msg[256];
+            snprintf(msg, sizeof(msg), "Unknown flag '%s' (ignored). Use -help for info.", argv[i]);
+            report_error(ERROR_WARNING, __FILE__, __LINE__, msg);
         }
     }
 

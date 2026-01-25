@@ -30,6 +30,9 @@
  * Usage:
  *  - Called by parser and preprocessing modules when an error condition
  *    is detected.
+ *  - Will be implemented:
+ *        Error 1: #endif without matching #ifdef (during parsing - will go on module_ifdef because this error it can be just detected by the modul who proces #ifdef/#endif)
+ *        Error 2: #ifdef without matching #endif (at the end of the file - will go on the parser because we just can detect the error when we finished reading ALL the file)
  *
  * Author: Andrea Salló Ribas
  * -----------------------------------------------------------------------------

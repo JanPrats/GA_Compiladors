@@ -17,6 +17,7 @@
 
 #include "./module_comments_remove.h"
 #include "../module_parser/parser.h"
+#include "../module_errors/module_errors.h"
 
 // -----------------------------------------------------------------------------
 // process_comment
@@ -101,11 +102,11 @@ int process_comment(ParserState* state, char current_char, char next_char, bool 
             prev = c;
         }
 
-        // If end-of-file is reached without closing the comment, emit a warning
-        fprintf(stderr,
-                "Warning: Unclosed multi-line comment in %s:%d\n",
-                state->current_filename,
-                state->current_line);
+        // If end-of-file is reached without closing the comment, report a warning
+        report_error(ERROR_WARNING,
+                 state->current_filename,
+                 state->current_line,
+                 "Unclosed multi-line comment");
 
         return 1; // Comment was detected, even if malformed
     }

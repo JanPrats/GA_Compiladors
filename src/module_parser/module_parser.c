@@ -129,6 +129,7 @@ void unread_char(ParserState* state, char c) {
     if (c == '\n') {
         state->current_line--;
     }
+}
 
 //Checks if a character is considered whitespace (are used to separate tokens, are ignored by the parser)
 bool is_whitespace(char c) {
@@ -153,6 +154,126 @@ void skip_whitespace(ParserState* state) {
     while ((c = peek_char(state)) && is_whitespace(c)) {
         read_char(state);
     }
+}
+
+
+// Main recursive parsing function
+int parse_until(ParserState* state, const char* stop_symbol, bool copy_to_output) {
+    char c;
+    bool at_line_start = true;
+    
+    while ((c = read_char(state)) != '\0') {    //repeat until the end of the file (read_char returns '\0' when it reaches it)
+        // Check for directives at line start
+        if (at_line_start && c == '#' && state->process_directives) {
+            //skip the spaces we may find between and read the following word
+            skip_whitespace(state);
+            char* directive = read_word(state);
+            
+            //detect the directive read and call the pertinent module to handle it
+            if (directive) {
+                // Process include
+                if (strcmp(directive, "include") == 0) {
+                    process_include(state, copy_to_output);
+                    at_line_start = true;
+                    continue;
+                }
+                // Process define
+                else if (strcmp(directive, "define") == 0) {
+                    if (copy_to_output) {
+                        process_define(state);
+                    } else {
+                        // Still parse it but don't add to dictionary, make the parser advance
+                        read_line(state);
+                    }
+                    at_line_start = true;
+                    continue;
+                }
+                // Process ifdef/ifndef
+                else if (strcmp(directive, "ifdef") == 0 || strcmp(directive, "ifndef") == 0) {
+                    //store which one was found to pass it to the module
+                    bool is_ifndef = (strcmp(directive, "ifndef") == 0);
+                    process_ifdef(state, is_ifndef, copy_to_output);
+                    at_line_start = true;
+                    continue;
+                }
+                // Check for stop symbols (endif, else)
+                else if (strcmp(directive, stop_symbol) == 0) {
+                    // Consume rest of line
+                    read_line(state);
+                    return 0; // Stop parsing at this level
+                }
+                else if (strcmp(directive, "endif") == 0) {
+                    if (strcmp(stop_symbol, "endif") != 0) {
+                        report_error(ERROR_ERROR, state->current_filename, state->current_line,
+                                   "Unexpected #endif without matching #ifdef");
+                    }
+                    read_line(state);
+                    return 0;
+                }
+                //still need checking once ifdef is fully developed
+                else if (strcmp(directive, "else") == 0) {
+                    if (strcmp(stop_symbol, "else") == 0 || strcmp(stop_symbol, "endif") == 0) {
+                        read_line(state);
+                        return 0;
+                    }
+                    read_line(state);
+                    at_line_start = true;
+                    continue;
+                }
+            }
+            at_line_start = false;
+            continue;
+        }
+        
+        // Check for comments
+        if (c == '/') {
+            char next = peek_char(state);
+            //checking if it is a comment and call the module to process it
+            if (next == '/' || next == '*') {
+                int comment_result = process_comment(state, c, next, copy_to_output);
+                at_line_start = (next == '/'); // Single-line comment ends at newline
+                continue;
+            }
+        }
+        
+        // Handle strings (don't process macros inside strings)
+        if (c == '"') {
+            if (copy_to_output) { // Copy the quote character to the output if output is enabled
+                fputc(c, state->output_file);
+            }
+            state->in_string = !state->in_string; //canviem estat, no s’han de substituir macros dins de cadenes
+            at_line_start = false; // A quote can never be at the start of a line for directives
+            continue;
+        }
+        
+        // Check for identifiers (potential macros)
+        // Only when not inside a string
+        if (!state->in_string && (isalpha(c))) {
+            unread_char(state, c); //read last work, put the character back
+            char* word = read_word(state);
+            
+            if (word) {
+                // Try to substitute macro
+                char* substitution = substitute_macro(state, word);
+                if (substitution && copy_to_output) {
+                    fprintf(state->output_file, "%s", substitution); //macro found
+                } else if (copy_to_output) {
+                    fprintf(state->output_file, "%s", word); //not a macro
+                }
+            }
+            at_line_start = false;
+            continue;
+        }
+        
+        // Regular character - copy if needed
+        if (copy_to_output) {
+            fputc(c, state->output_file);
+        }
+        
+        at_line_start = (c == '\n'); // Used to detect preprocessor directives (#), need to be at  line start
+    }
+    
+    return 0;
 }
 
 
