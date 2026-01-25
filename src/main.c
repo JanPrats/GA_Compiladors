@@ -4,8 +4,6 @@
 FILE* ofile = NULL; // The output handler for the project run
 
 int main(int argc, char *argv[]) {
-    int n = 0;
-
     errors_init();
 
     ofile = stdout; // Default output to stdout
@@ -17,8 +15,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Show help if requested
-    if (flags->show_help) {
+    if (flags->show_help) { //Show help if requested
         show_help();
         free(flags);
         return 0;
@@ -29,35 +26,28 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "Flags: remove_comments=%d, process_directives=%d\n",
             flags->comments_remove, flags->process_directives);
 
-    errors_finalize();
-
-    if (errors_count() > 0) {
-        return 1; // Devuelve error al sistema
-    }
-    // Initialize parser
     ParserState* state = init_parser(flags->ifile, flags->ofile, flags);
     if (!state) {
+        fprintf(stderr, "Error: Could not initialize parser\n");
         free(flags);
         return 1;
     }
 
     fprintf(stdout, "Preprocessing...\n");
-
     // Parse the input file until EOF
     // We use an empty array (only NULL) so parse_until will return -1 when it reaches actual EOF
     const char* no_stop[] = {NULL};  // Empty array means parse until actual EOF
     int result = parse_until(state, no_stop, true);
 
-    // Cleanup
+    fprintf(stdout, "Preprocessing completed!\n");
+    fprintf(stdout, "Output written to: %s\n", flags->ofile);
+
     cleanup_parser(state);
     free(flags);
 
-    if (result == -1) {
-        // -1 means we reached EOF, which is expected and successful
-        fprintf(stdout, "Preprocessing completed successfully!\n");
-        fprintf(stdout, "Output written to: %s\n", flags->ofile);
-    } else {
-        fprintf(stderr, "Preprocessing failed with errors.\n");
+    errors_finalize();
+
+    if (errors_count() > 0) {
         return 1;
     }
 
