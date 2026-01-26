@@ -1,3 +1,38 @@
+/*
+ * -----------------------------------------------------------------------------
+ * main.c
+ *
+ * Main entry point for the C preprocessor application. This program processes
+ * C source files by handling preprocessor directives, macro definitions, and
+ * conditional compilation.
+ *
+ * Program Flow:
+ * 1. Initialize error tracking system
+ * 2. Process command-line arguments (input/output files, flags)
+ * 3. Initialize parser with input file and configuration
+ * 4. Execute main parsing loop to process the entire input file
+ * 5. Clean up resources and finalize error reporting
+ * 6. Exit with appropriate status code based on error count
+ *
+ * Supported Features:
+ * - Comment removal (-c flag)
+ * - Directive processing (-d flag) including #include, #define, #ifdef, #ifndef
+ * - Macro substitution
+ * - Error tracking and reporting
+ *
+ * Usage:
+ *     ./preprocessor <input_file> <output_file> [-c] [-d]
+ *     Use -help flag for detailed usage information
+ *
+ * Exit Codes:
+ *     0 - Success (no errors encountered)
+ *     1 - Failure (errors occurred during preprocessing)
+ *
+ * Team: GA
+ * Contributor/s: Gorka Hernández Villalón
+ * -----------------------------------------------------------------------------
+ */
+
 #include "./main.h"
 #include "./module_parser/module_parser.h"
 
