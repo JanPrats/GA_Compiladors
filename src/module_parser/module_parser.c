@@ -1,4 +1,34 @@
-// POL, CLARA, MARC, ANDREA, GORKA, JAN
+/*
+ * -----------------------------------------------------------------------------
+ * module_parser.c
+ *
+ * Core Parsing Engine.
+ *
+ * This module implements the main logic of the preprocessor. It reads the input source file character by character, detects tokens, and dispatches actions to
+ * other specific modules (define, include, ifdef, etc.).
+ *
+ * Responsibilities:
+ * - Initialize and clean up the ParserState and MacroDictionary.
+ * - Provide low-level stream handling (read, peek, unread) with lookahead.
+ * - Implement the main recursive parsing loop (`parse_until`).
+ * - Identify and dispatch preprocessor directives (#include, #define, etc.).
+ * - Handle macro substitution and comment removal.
+ * - Track line numbers and context (strings, comments) for error reporting.
+ *
+ * Main functions:
+ * - init_parser(): Allocates memory and sets initial state.
+ * - parse_until(): The main loop that processes text until a stop symbol (EOF or else) is found.
+ * - read_char() / peek_char(): Handles input stream buffering.
+ * - read_word(): Extracts identifiers for macro checking.
+ *
+ * Design notes:
+ * - Uses a single-character lookahead buffer (`state->lookahead`) to make parsing decisions without consuming tokens prematurely.
+ * - `parse_until` is designed to be recursive or iterative depending on usage, allowing it to handle nested blocks (like nested #ifdefs) if needed.
+ * - The module acts as the "Controller", delegating specific directive logic to helper modules while maintaining the global state.
+ *
+ * Authors: Pol, Clara, Marc, Andrea, Gorka, Jan
+ * -----------------------------------------------------------------------------
+ */
 
 #include <stdlib.h>
 #include <string.h>
