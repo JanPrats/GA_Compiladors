@@ -45,7 +45,7 @@ ArgFlags* process_arguments(int argc, char *argv[]) {
 
 
     // Initialize the flags
-    flags->comments_remove = false;
+    flags->remove_comments = false;
     flags->process_directives = false;
     flags->show_help = false;
     flags->ifile[0] = '\0'; //"empty" string
@@ -55,11 +55,11 @@ ArgFlags* process_arguments(int argc, char *argv[]) {
     // Itentify each flag
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-c") == 0) { // If the flag is -c
-            flags->comments_remove = true; // Global Variable for removing comments is now true
+            flags->remove_comments = true; // Global Variable for removing comments is now true
         } else if (strcmp(argv[i], "-d") == 0) { //If flas is -d
             flags->process_directives = true; // Same but for directives
         } else if (strcmp(argv[i], "-all") == 0) { // equal to -c -d
-            flags->comments_remove = true;
+            flags->remove_comments = true;
             flags->process_directives = true; //2 previous steps in 1
         } else if (strcmp(argv[i], "-help") == 0) { //If on the other hand we want to show the help manpage
             flags->show_help = true;    // Global Variable for showing help and only showing help, no preprocessing
@@ -73,8 +73,8 @@ ArgFlags* process_arguments(int argc, char *argv[]) {
         }
     }
 
-    if (!flags->comments_remove && !flags->process_directives) { // In case there was not a -c -d or -all flag, we will use the default (-c)
-        flags->comments_remove = true; // -c
+    if (!flags->remove_comments && !flags->process_directives) { // In case there was not a -c -d or -all flag, we will use the default (-c)
+        flags->remove_comments = true; // -c
     }
 
     strncpy(flags->ifile, input_filename, MAX_FILENAME - 1); //Copy input file name to ifile entry of the struct

@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "Input file: %s\n", flags->ifile);
     fprintf(stdout, "Output file: %s\n", flags->ofile);
     fprintf(stdout, "Flags: remove_comments=%d, process_directives=%d\n",
-            flags->comments_remove, flags->process_directives);
+            flags->remove_comments, flags->process_directives);
 
     ParserState* state = init_parser(flags->ifile, flags->ofile, flags);
     if (!state) {

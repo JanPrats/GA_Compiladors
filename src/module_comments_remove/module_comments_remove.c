@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 #include "./module_comments_remove.h"
-#include "../module_parser/parser.h"
+#include "../module_parser/module_parser.h"
 #include "../module_errors/module_errors.h"
 
 // -----------------------------------------------------------------------------

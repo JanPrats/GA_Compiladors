@@ -7,14 +7,14 @@
 
 // Global Variables
 #define MAX_FILENAME 512        // Max File length (in bits I think)
-#define MAX_MACRO_LENGTH 256      // Max Key Length
+#define MAX_MACRO_NAME 256      // Max Key Length
 #define MAX_MACRO_VALUE 1024    // MAX Value Length
 #define MAX_MACROS 1024         // Max number of macros
 #define MAX_LINE_LENGTH 4096    // Max length of a whole line
 
 // Macro dictionary entry (Name of the Macro, its value and if it is defined or not)
 typedef struct MacroEntry {
-    char name[MAX_MACRO_LENGTH];        
+    char name[MAX_MACRO_NAME];        
     char value[MAX_MACRO_VALUE];
     bool is_defined;
 } MacroEntry;
@@ -32,7 +32,7 @@ typedef struct ParserState {
     char current_filename[MAX_FILENAME]; //The name of the file we are reading (input file)
     int current_line; //The name of the file we are writing at (output file)
     MacroDict* macro_dict; // Dictionary of Macros
-    bool comments_remove;  // -c 
+    bool remove_comments;  // -c 
     bool process_directives; // -d 
     bool in_string;  // To know if we are inside a string so the parser does not interpret directives or macros inside strings [For example: printf("MAX_MACROS") should not be substituted to printf("1024")]
     bool in_comment; // To know if we are inside a comment so the parser does not interpret directives or macros inside comments
@@ -42,7 +42,7 @@ typedef struct ParserState {
 
 // Flags from command-line arguments -c -d -all -help
 typedef struct ArgFlags {
-    bool comments_remove; // -c (default)
+    bool remove_comments; // -c (default)
     bool process_directives; // -d
     bool show_help; // -help
     char ifile[MAX_FILENAME]; //input file name as a string
