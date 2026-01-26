@@ -71,7 +71,7 @@ ArgFlags* process_arguments(int argc, char *argv[]) {
         else {
             char msg[256];
             snprintf(msg, sizeof(msg), "Unknown flag '%s' (ignored). Use -help for info.", argv[i]);
-            //report_error(ERROR_WARNING, __FILE__, __LINE__, msg);
+            report_error(ERROR_WARNING, __FILE__, __LINE__, msg);
         }
     }
 

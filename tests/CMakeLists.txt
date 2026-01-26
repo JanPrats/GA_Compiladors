@@ -10,7 +10,11 @@ message(STATUS "(${PROJECT_NAME}) Configuring test executables for modules...")
 
 # Test for module_args
 add_executable(test_module_args test_module_args.c)
-target_link_libraries(test_module_args PRIVATE module_args utils)
+target_link_libraries(test_module_args PRIVATE
+    module_args
+    module_errors
+    utils
+)
 target_include_directories(test_module_args PRIVATE ${PROJECT_SOURCE_DIR}/src)
 add_test(NAME TestModuleArgs COMMAND test_module_args arg90 arg91 arg92)
 message(STATUS " - (${PROJECT_NAME}) Test for module_args added")
