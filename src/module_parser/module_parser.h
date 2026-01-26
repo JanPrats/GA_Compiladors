@@ -1,3 +1,22 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_parser.h
+ *
+ * Interface for the core parsing engine.
+ *
+ * This header defines the central data structures used to maintain the state
+ * of the preprocessor throughout its execution. It includes definitions for
+ * the macro dictionary, command-line flags, and the main parser state.
+ *
+ * Key Structures:
+ * - ParserState: Holds file pointers, current line, macro dictionary, and flags.
+ * - MacroDict: Stores defined macros for substitution.
+ * - ArgFlags: Stores configuration options parsed from command line.
+ *
+ * Authors: Pol, Clara, Marc, Andrea, Gorka, Jan
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef MODULE_PARSER_H
 #define MODULE_PARSER_H
 
