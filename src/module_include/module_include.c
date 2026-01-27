@@ -12,7 +12,7 @@
  * - Supports relative path searching for included files.
  * - Prevents infinite recursion with a depth limit.
  *
- * Authors: Gorka Hernández Villalón, Antigravity
+ * Authors: Gorka Hernández Villalón
  * -----------------------------------------------------------------------------
  */
 
