@@ -84,7 +84,7 @@ OUTPUT: ArgFlags + Input/Output filenames
 
 **Sortida:**
 - Cap de directa. Escriu el fitxer processat a `ofile`
-- `ParserState` (estat intern del parser)
+- `result`. Un int per saber si ha trobat el EOF o no.
 
 **Responsabilitats:**
 - Llegeix el fitxer caràcter per caràcter
@@ -105,7 +105,7 @@ OUTPUT: ArgFlags + Input/Output filenames
 ### 4. **MODULE INCLUDE** 
 **Entrada:**
 - Després de directiva `#include`
-- Recursiu: pot processar directives dins del fitxer incluït
+- Recursiu: pot cridar al parser per processar un fitxer de include.
 
 **Sortida:**
 - No retorna res
