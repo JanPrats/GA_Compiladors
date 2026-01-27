@@ -1,6 +1,6 @@
 /*
  * -----------------------------------------------------------------------------
- * module_define.h
+ * module_define.c
  *
  * This module provides functionality to handle macros in the parser.
  *

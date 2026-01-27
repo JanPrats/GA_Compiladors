@@ -262,7 +262,7 @@ void my_function(void);
 │                                              │
 │  Preserve strings:                           │
 │    "This // is not a comment"                │
-│    └──> Keep intact (in_string flag)        │
+│    └──> Keep intact (in_string flag)         │
 └──────────────────────────────────────────────┘
 ```
 
@@ -276,7 +276,7 @@ void my_function(void);
 │    MAX ──> 100                               │
 │                                              │
 │  Function-like macros:                       │
-│    MIN(x,y) ──> ((x)<(y)?(x):(y))           │
+│    MIN(x,y) ──> ((x)<(y)?(x):(y))            │
 │                                              │
 │  Process:                                    │
 │    1. read_word() ──> identifier             │
@@ -381,9 +381,9 @@ Input ──> module_args ──> ArgFlags
         ▼                   ▼                         ▼
   Comments Module    Directive Modules         Macro Module
         │                   │                         │
-        │            ┌──────┴──────┐                 │
+        │            ┌──────┴──────┐                  │
         │            ▼             ▼                  │
-        │      Include Module  Define Module         │
+        │      Include Module  Define Module          │
         │            │             │                  │
         │            │      ifdef/endif Module        │
         │            │             │                  │
@@ -403,8 +403,8 @@ Stack:                          Heap:
 │   └─ result  │               │   └─ macro_dict  │
 └──────────────┘               │                  │
                                │ MacroDict*       │
-┌──────────────┐               │   ├─ entries[]  │
-│ ArgFlags*    │ ─────────────>│   └─ count      │
+┌──────────────┐               │   ├─ entries[]   │
+│ ArgFlags*    │ ─────────────>│   └─ count       │
 │   ├─ ifile   │               └──────────────────┘
 │   ├─ ofile   │
 │   └─ flags   │
@@ -508,10 +508,10 @@ Error Detection ──┐
 ┌─────────────────────────────────────┐
 │       module_errors                 │
 │                                     │
-│  ├─> errors_init()                 │
-│  ├─> report_error()                │
-│  ├─> errors_count()                │
-│  └─> errors_finalize()             │
+│  ├─> errors_init()                  │
+│  ├─> report_error()                 │
+│  ├─> errors_count()                 │
+│  └─> errors_finalize()              │
 └──────────────┬──────────────────────┘
                │
                ├──> Log to stderr

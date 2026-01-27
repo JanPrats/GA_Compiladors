@@ -1,3 +1,23 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_ifdef_endif.c
+ *
+ * This module provides functionality to handle conditional compilation directives.
+ *
+ * - `process_ifdef`: Processes a #ifdef or #ifndef directive, including or excluding
+ *                     code based on macro definitions.
+ *
+ * Usage:
+ *     Called from the parser when processing lines containing #ifdef or #ifndef directives. 
+ *
+ * Status:
+ *     Added error handling for missing #endif and unexpected #endif. Can handle #else blocks.
+ *
+ * Team: GA
+ * Author: Marc Rodríguez Vitolo
+ * -----------------------------------------------------------------------------
+ */
+
 #include "module_ifdef_endif.h"
 #include "../module_parser/module_parser.h"
 #include "../module_define/module_define.h"
@@ -61,10 +81,6 @@ int process_ifdef(ParserState* state, bool is_ifndef, bool copy_to_output) {
     }
     
     return 0;
-}
-
-void module_ifdef_endif_run(void) {
-    printf("Loaded module_ifdef_endif: conditional compilation module\n");
 }
 
 
