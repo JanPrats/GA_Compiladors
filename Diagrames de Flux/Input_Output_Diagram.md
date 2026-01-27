@@ -142,6 +142,22 @@ OUTPUT: ArgFlags + Input/Output filenames
 
 ---
 
+### 7. MODULE ERRORS (module_errors)
+**Entrada:**
+
+- ErrorLevel (tipus d'error: WARNING o ERROR)
+- filename (nom del fitxer on s'ha detectat l'error)
+- line (número de línia on s'ha produït)
+- message (missatge descriptiu de l'error/avís)
+
+**Sortida:**
+
+Cap retorn directe. Escriu a stderr:
+
+- Missatges formatats amb "WARNING:" o "ERROR:" segons el tipus
+- Format: ERROR/WARNING: filename:line: message
+- Resum final al finalitzar el preprocessament
+
 ## Flux Complet d'Exemple
 
 ```
@@ -181,10 +197,10 @@ INPUT: command line
                                ▼    ▼    ▼             ▼    ▼
             ┌──────────────────┐  ┌──────────────────┐        ┌──────────────────┐
             │COMMENTS_REMOVE   │  │  INCLUDE         │        │   ERRORS         │
-            │Si: preserva      │  │ Llegeix: "file.h"│        │                  │
-            │Si no :descarta   │  │  Processa        │
-            │No retorna res    │  │  recursivament   │        │                  │
-            │Escriu output     │  │  No retorna res  │        │                  │
+            │Si: preserva      │  │ Llegeix: "file.h"│        │ Detecta errors   │
+            │Si no :descarta   │  │  Processa        │        | Acumula comptador|
+            │No retorna res    │  │  recursivament   │        │ Informa stderr   │
+            │Escriu output     │  │  No retorna res  │        │ report_error()   │
             │                  │  │  Escriu output   │        │                  │
             └──────────────────┘  └──────────────────┘        └──────────────────┘
             ┌──────────────────┐  ┌──────────────────┐
