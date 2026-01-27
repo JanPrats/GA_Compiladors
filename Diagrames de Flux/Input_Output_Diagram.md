@@ -47,7 +47,7 @@
     | Output File |
     +-------------+
 ```
-# Flux Arguments 
+## Flux Arguments 
 
 ```
 INPUT: .exe -flag file.c
@@ -74,12 +74,10 @@ OUTPUT: ArgFlags + Input/Output filenames
   - `process_directives`: flag -d (bool)
   - `show_help`: flag -help (bool)
 
-**No retorna res al fitxer**, escriu missatges de debug al `stdout`
-
 ---
 
 ### 2. **PARSER** (module_parser)
-**Entrada:**
+**Entrada:**  per inicilaitzar
 - `ifile` (fitxer d'entrada)
 - `ofile` (fitxer de sortida)
 - `ArgFlags` (flags de configuració)
@@ -95,23 +93,18 @@ OUTPUT: ArgFlags + Input/Output filenames
 
 ---
 
-### 3. **MODULE COMMENTS_REMOVE** (procés dins del parser)
+### 3. **MODULE COMMENTS_REMOVE** 
 **Entrada:**
-- Caràcters llegits pel parser
-- `current_char` i `next_char` (per detectar `//` o `/*`)
+- Caràcters llegits pel parser, punter després d'haver detctat `//` o `/*`
 
 **Sortida:**
-- No retorna res
-- Escriu al fitxer de sortida:
-  - Si `-c` flag: escriu els comentaris (preservats)
-  - Si `-c` no està actiu: els comments es descarten
+- Escriu al fitxer de sortida si flag per borrar
 
 ---
 
-### 4. **MODULE INCLUDE** (procés dins del parser)
+### 4. **MODULE INCLUDE** 
 **Entrada:**
-- Detecta directiva `#include "file"` o `#include <file>`
-- Llegeix fins trobar `"` o `>`
+- Després de directiva `#include`
 - Recursiu: pot processar directives dins del fitxer incluït
 
 **Sortida:**
@@ -120,45 +113,23 @@ OUTPUT: ArgFlags + Input/Output filenames
   - El contingut del fitxer incluït (processat recursivament)
   - Sense la línea `#include` original
 
-**Exemple:**
-```c
-// Input: file.c
-#include "header.h"
-int main() {}
-
-// Sortida a output.c:
-[contingut de header.h aquí]
-int main() {}
-```
-
 ---
 
-### 5. **MODULE DEFINE** (procés dins del parser)
+### 5. **MODULE DEFINE**
 **Entrada:**
-- Detecta directiva `#define MACRO valor`
+- Punter de després de directiva `#define`
 - Llegeix el nom del macro i el seu valor
 
 **Sortida:**
-- No retorna res
 - Emmagatzema el macro a `MacroDict`
 - No escriu al fitxer de sortida (la directiva `#define` es descarta)
-- Usa el macro per a substitucions posteriores
-
-**Exemple:**
-```c
-// Input: 
-#define PI 3.14159
-float area = PI * r * r;
-
-// Sortida:
-float area = 3.14159 * r * r;
-```
+- Usa el macro per a substitucions posteriores, retorna value 
 
 ---
 
-### 6. **MODULE IFDEF/ENDIF** (procés dins del parser)
+### 6. **MODULE IFDEF/ENDIF** 
 **Entrada:**
-- Detecta `#ifdef MACRO` o `#ifndef MACRO`
+- Punter de després de directiva
 - Comprova a `MacroDict` si el macro està definit
 - Processa recursivament fins trobar `#else` o `#endif`
 
@@ -169,30 +140,18 @@ float area = 3.14159 * r * r;
   - Si la condició és falsa: descarta el bloc (o escriu el `#else`)
 - Les directives `#ifdef`, `#else`, `#endif` NO es copien
 
-**Exemple:**
-```c
-// Input:
-#define DEBUG
-#ifdef DEBUG
-    printf("Debug mode");
-#endif
-
-// Sortida:
-    printf("Debug mode");
-```
-
 ---
 
 ## Flux Complet d'Exemple
 
 ```
-INPUT: preprocessor input.c output.c -c -d
+INPUT: command line
 
                           ┌──────────────────────┐
                           │   MODULE ARGS        │
                           │ processa: -c -d      │
                           │ input: input.c       │
-                          │ output: output.c     │
+                          │ output: output_pp.c  │
                           └──────────┬───────────┘
                                      │
                                      ▼
@@ -208,60 +167,44 @@ INPUT: preprocessor input.c output.c -c -d
                           │ llegeix char per char            │
                           │                                  │
                           │  Detecta:                        │
-                          │  - '//' o '/*' → COMMENTS        │
                           │  - '#include' → INCLUDE          │
                           │  - '#define' → DEFINE            │
                           │  - '#ifdef' → IFDEF/ENDIF        │
+                          │  - '//' o '/*' → COMMENTS        │
+                          │  - substitució macro             │
                           │  - altres → escriu output        │
                           │                                  │
                           │ Crides recursives als mòduls    │
                           └──────────┬───────────────────────┘
-                                     │
-                    ┌────┬────┬──────┴──────┬────┐
-                    ▼    ▼    ▼             ▼    ▼
-            ┌──────────────────┐  ┌──────────────────┐
-            │COMMENTS_REMOVE   │  │  INCLUDE         │
-            │Si -c: preserva   │  │  Lee: "file.h"   │
-            │Si -c no: descarta│  │  Processa        │
-            │No retorna res    │  │  recursivament   │
-            │Escriu output     │  │  No retorna res  │
-            │                  │  │  Escriu output   │
-            └──────────────────┘  └──────────────────┘
+                                                │
+                               ┌────┬────┬──────┴──────┬────┐
+                               ▼    ▼    ▼             ▼    ▼
+            ┌──────────────────┐  ┌──────────────────┐        ┌──────────────────┐
+            │COMMENTS_REMOVE   │  │  INCLUDE         │        │   ERRORS         │
+            │Si: preserva      │  │ Llegeix: "file.h"│        │                  │
+            │Si no :descarta   │  │  Processa        │
+            │No retorna res    │  │  recursivament   │        │                  │
+            │Escriu output     │  │  No retorna res  │        │                  │
+            │                  │  │  Escriu output   │        │                  │
+            └──────────────────┘  └──────────────────┘        └──────────────────┘
             ┌──────────────────┐  ┌──────────────────┐
             │  DEFINE          │  │  IFDEF/ENDIF     │
-            │Lee: MACRO valor  │  │  Check MacroDict │
-            │No retorna res    │  │  Si cert: inclou │
+            │Llegeix:MACRO valor│ │  Check MacroDict │
+            │No retorna o macro│  │  Si cert: inclou │
             │Guarda MacroDict  │  │  Si fals: descarta
             │No escriu output  │  │  No retorna res  │
-            │(descarta línea)  │  │  Escriu output   │
+            │                  │  │  Escriu output   │
             └──────────────────┘  └──────────────────┘
                                      │
                                      ▼
                           ┌──────────────────────────┐
                           │   OUTPUT FILE GENERATED  │
-                          │   (output.c)             │
-                          │   - Sense comentaris     │
-                          │   - Sense #include       │
-                          │   - Sense #ifdef blocs   │
-                          │   - Macros substituïts   │
+                          │   (output_pp.c)          │
                           └──────────────────────────┘
 ```
 
 ---
 
-## Taula Resum
-
-| Mòdul | Input | Output | Escriu? | Retorna |
-|-------|-------|--------|---------|---------|
-| **ARGS** | argc, argv | ArgFlags | Sí (stdout) | ArgFlags* |
-| **PARSER** | ifile, ofile, flags | ParserState | Sí (output file) | ParserState* |
-| **COMMENTS** | chars (/, *) | - | Sí/No (segons flag) | int (0/1) |
-| **INCLUDE** | "#include..." | - | Sí (content) | int |
-| **DEFINE** | "#define..." | MacroDict | Sí (MacroDict) | int |
-| **IFDEF** | "#ifdef..." | - | Sí (if block) | int |
-| **ERRORS** | Errors | - | Sí (stderr) | - |
-
----
 
 ## Notes Importants
 
