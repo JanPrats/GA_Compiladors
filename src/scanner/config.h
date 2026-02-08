@@ -27,7 +27,7 @@ OFF: (all) messages are written to the stdout
 */
 /* COUNTOUT FLAG    [For counting]
 OUT: messages should be sent to the output file
-DBGCOUNT: messages should be sent to the output file.
+DBGCOUNT: messages should be sent to the stdout file.
 */
 
 //These ones should not be changed (well, not usually to compile)
@@ -58,10 +58,13 @@ DBGCOUNT: messages should be sent to the output file.
 /////
 
 //ENUMS
+
+//For error Types when there is an error
 typedef enum{
     INVALID_ARGUMENT //For now empty because idk which errors we consider and it is not my main focus now
 } Error;
 
+//Depending on this we print in a format or in another in the outputfile
 typedef enum{
     RELEASE,    // <lexeme, category> <lexeme, category> \n<lexeme, category> <lexeme, category> <lexeme, category>(if there is a \n in the file for now, maybe later it changes); NO EMPTY LINES
     DEBUG       // same as RELEASE but: empty line after every token line (\n\n for each \n i think); an line number before each non-empty line i.e 1 <lexeme, cat> <lexeme, cat> \n \n 3 <lexeme, cat> <lexeme, cat> (or 2 and not 3 not sure)
@@ -70,10 +73,12 @@ typedef enum{
 // IF FORMAT == RELEASE ==> COUNTFIG = false
 // IF FORMAT == DEBUG ==> COUNTFIG = true/false (depending on what we want, but usually true)
 
+//Token Types
 typedef enum{
     CAT_NUMBER,         //[0-9]+
     CAT_IDENTIFIER,     //[a-zA-Z] ([0-9] or [a-zA-Z])* {not repeated and not a keyword}
     CAT_KEYWORD,        //[a-zA-Z]+ (not sure if there can be numbers in keywords)
+    CAT_TYPE,           //[a-zA-Z]+ (not sure if there can be numbers in keywords)
 	CAT_LITERAL,        // " ASCII " (really any string between "")
 	CAT_OPERATOR,       // = or > or + or *         ( i guess not - nor / nor < nor =< etcetc)
 	CAT_SPECIALCHAR,    // ( or ) or ; or { or } or [ or ] or ,
@@ -158,13 +163,29 @@ typedef struct TransitionMatrix {
 } TransitionMatrix;
 
 typedef struct AutomataDFA {
-    char alphablet[MAX_ALPHABET_SIZE];
-    int states[MAX_STATES];
-    int start_state;
-    int accepting_states[MAX_STATES];
-    TransitionMatrix matrix;
-
+    char alphablet[MAX_ALPHABET_SIZE];              // [w,h,i,l,e] {if we need w for transition matrix it is 0, for h it is 1, etc; as they appear} //Could also be a dictionary
+    int states[MAX_STATES];                         // [1,2,3,4,5,6,7] {could be just an int, but idk just in case}
+    int start_state;                                // 1
+    int current_state;                              // current_state (cs) changes when we read characters (cs == 1 and read w --> cs == 2)
+    int accepting_states[MAX_STATES];               // [6] {could be more}
+    char lookahead_acceptance[MAX_ALPHABET_SIZE];   // ["("," ","\n", EOF]
+    TransitionMatrix matrix;                        // [[2,7,7,7,7],[7,3,7,7,7],[7,7,4,7,7],[7,7,7,5,7],[7,7,7,7,6],[7,7,7,7,7],[7,7,7,7,7]]
+    Category type;                                  // CAT_KEYWORD (it is an enum, so include config.h to have the struct)
+    bool dont_look_anymore;                         // If we have already finished the execution and we do not want to keep looking
 } AutomataDFA;
+
+/*
+
+//DFA IF
+alphabet:           ["i", "f"]      ==>  i = position_0_in_array ; f = position_1_in_array
+states:             [1,2,3,4]       //4 == conjunt_buit state
+start_state:        1
+accepting_states:   [3]
+la_acceptance:      ["(", " "]
+TM:                 [[2,4],[4,3],[4,4],[4,4]]
+Category:           CAT_KEYWORD
+
+*/
 
 //Not sure if we will need these 2
 typedef struct ErrorReport {
@@ -172,6 +193,7 @@ typedef struct ErrorReport {
     Step step;
     int line; //Maybe not needed
 } ErrorReport;
+
 typedef struct CountReport {
     int line;
     char function_name[MAX_FUNCTION_NAME];
