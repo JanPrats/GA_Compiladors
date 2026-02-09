@@ -12,6 +12,32 @@ bool automata_is_accepting(const AutomataDFA* a, int st) {
     return false;
 }
 
+AutomataDFA return_automata = {
+    .alphabet = { 'r', 'e', 't', 'u', 'n' },
+    .states = { 0, 1, 2, 3, 4, 5, 6, 7 },
+    .start_state = 1,
+    .current_state = 1,
+    .accepting_states = { 7 },
+    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{' },
+    .matrix = {
+        .states_rows = {
+            { .new_state = { 2, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 3, 0, 0, 0 } },
+            { .new_state = { 0, 0, 4, 0, 0 } },
+            { .new_state = { 0, 0, 0, 5, 0 } },
+            { .new_state = { 6, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 0, 0, 7 } },
+            { .new_state = { 0, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 0, 0, 0 } }
+        },
+        .width = 5,   
+        .height = 8   
+    },
+    .type = CAT_KEYWORD,
+    .dont_look_anymore = false
+};
+
+
 AutomataDFA automata_number_create(void) {
     AutomataDFA a;
     memset(&a, 0, sizeof(a));
