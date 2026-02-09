@@ -91,10 +91,10 @@ typedef enum{
 } Step;
 
 typedef enum{ //NOT SURE IF IT WILL BE NEEDED BE CAREFUL
-    HELP,
-	DEBUG,
-	COUNTCONFIG,
-	PARSER //Whether we also call parser in main or just create the output file
+    FLAG_HELP,
+	FLAG_DEBUG,
+	FLAG_COUNTCONFIG,
+	FLAG_PARSER //Whether we also call parser in main or just create the output file
 } Flag;
 
 
@@ -103,6 +103,7 @@ typedef enum{ //NOT SURE IF IT WILL BE NEEDED BE CAREFUL
 typedef struct Token {
     char lexeme[MAX_TOKEN_NAME];    //Literal string (lexeme)    
     Category cat;                   //Category from the ones above
+    int line;                       //Line number where the token starts
     // bool is_defined; //Not sure if needed
 } Token;
 
@@ -116,7 +117,7 @@ typedef struct IdendifierDict {
 typedef struct ListTokens {
     Token tokens[MAX_TOKENS];
     int count;
-} IdendifierDict;
+} ListTokens;
 
 //This probably still needs things to be changed but for now we have this
 //To count the input and output calls; The number of operations done etc etc
@@ -139,8 +140,8 @@ typedef struct {
     Outformat oform;
 	bool debug;
 	bool countconfig;
-	char ifile_name[MAX_MACRO_NAME]; 
-	char ofile_name[MAX_MACRO_NAME];
+	char ifile_name[MAX_FILENAME]; 
+	char ofile_name[MAX_FILENAME];
 	FILE* ifile;
 	FILE* ofile;
     FILE* error_file;

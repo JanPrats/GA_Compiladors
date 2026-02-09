@@ -2,20 +2,19 @@
 #define MAIN_H
  
 #include <stdio.h>
-#include "./utils_files.h"
-#include "./module_args/module_args.h"
-#include "./module_comments_remove/module_comments_remove.h"
-#include "./module_define/module_define.h"
-#include "./module_errors/module_errors.h"
-#include "./module_ifdef_endif/module_ifdef_endif.h"
-#include "./module_include/module_include.h"
-#include "./module_macros/module_macros.h"
-#include "./module_parser/module_parser.h"
-
-// Output file of project run: either a stdout or a filename with log extension (comment one out)
-#define PROJOUTFILENAME "./proj_modules_template.log"
-//#define PROJOUTFILENAME "stdout"
-
-extern FILE* ofile; // The output handler for the project run (same variable name as in modules)
-
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include "config.h"
+#include "module_automata/module_automata.h"
+#include "module_error/module_error.h"
+#include "module_init/module_init.h"
+extern FILE* ofile; // The output handler for the project run
+const char* category_to_string(Category cat);
+// Jan por hacer: Single token scan: runs all automata on the input starting at input[*idx].
+// Dispatches to appropriate DFA(s) based on current character.
+// Returns the recognized token and advances *idx past consumed characters.
+// If no automaton recognizes the input, returns a CAT_NONRECOGNIZED token.
+Token scan_token(const char* input, int* idx, int line,AutomataDFA* automata_list, int automata_count);
 #endif // MAIN_H
