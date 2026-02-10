@@ -73,19 +73,19 @@ AutomataDFA automata_number_create(void) {
 
 
 AutomataDFA specials_automata = {
-    .alphabet = { ';', ',', '(', ')', '{', '}', '[', ']', '@', '#', '$', '&', '|', ':', '?' },
+    .alphabet = { ';', ',', '(', ')', '{', '}', '[', ']'},
     .states = {0, 1, 2},
     .start_state = 0,
     .current_state = 0,
     .accepting_states = {1, 2},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', '@', '#', '$', '&', '|', ':', '?' },
+    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
     .matrix = {            
         .states_rows = {
-            { .new_state = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, 
-            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } }, 
-            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } }, 
+            { .new_state = { 1, 1, 1, 1, 1, 1, 1, 1} }, 
+            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2} }, 
+            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2} }
         },
-        .width = 15,   
+        .width = 8,   
         .height = 3  
     },
     .type = CAT_SPECIALCHAR,
@@ -94,26 +94,23 @@ AutomataDFA specials_automata = {
 
 AutomataDFA operators_automata = {
     .alphabet = { '+', '-', '=', '!', '*', '/'},
-    .states = {0, 1, 2, 3, 4, 5, 6, 7, 8},
+    .states = {0, 1, 2, 3, 4, 5, 6},
     .start_state = 0,
     .current_state = 0,
-    .accepting_states = {2, 3, 4, 5, 6, 7, 8},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', '@', '#', '$', '&', '|', ':', '?' },
+    .accepting_states = {1, 2, 3, 4, 5, 6},
+    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
     .matrix = {            
         .states_rows = {
-            { .new_state = { 2, 4, 3, 1, 5, 6 } }, 
-            { .new_state = { 8, 8, 7, 8, 8, 8 } }, 
-            { .new_state = { 7, 8, 8, 8, 8, 8 } }, 
-            { .new_state = { 8, 8, 7, 8, 8, 8 } },
-            { .new_state = { 8, 7, 8, 8, 8, 8 } },
-            { .new_state = { 8, 8, 8, 8, 7, 8 } },
-            { .new_state = { 8, 8, 8, 8, 8, 7 } },
-            { .new_state = { 8, 8, 8, 8, 8, 8 } },
-            { .new_state = { 8, 8, 8, 8, 8, 8 } }
-            
+            { .new_state = { 2, 4, 1, 3} }, 
+            { .new_state = { 6, 6, 5, 6} }, 
+            { .new_state = { 5, 6, 6, 6} }, 
+            { .new_state = { 6, 6, 6, 5} }, 
+            { .new_state = { 6, 5, 6, 6} }, 
+            { .new_state = { 6, 6, 6, 6} }, 
+            { .new_state = { 6, 6, 6, 6} } 
         },
-        .width = 15,   
-        .height = 3  
+        .width = 4,   
+        .height = 7  
     },
     .type = CAT_OPERATOR,
     .dont_look_anymore = false
