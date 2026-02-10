@@ -167,10 +167,10 @@ AutomataDFA literal_automata = {
     .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', ',', '.', ')', '}', '+', '=', '*', '>' },
     .matrix = {
         .states_rows = {
-            { .new_state = { 1 } },  // State 0: seeing " -> go to state 1 (inside string)
-            { .new_state = { 2 } },  // State 1: seeing " -> go to state 2 (accepting, string complete)
-            { .new_state = { 3 } },  // State 2: accepting state, any transition -> sink
-            { .new_state = { 3 } }   // State 3: sink state
+            { .new_state = { 1 } },  
+            { .new_state = { 2 } },  
+            { .new_state = { 3 } },  
+            { .new_state = { 3 } }   
         },
         .width = 1,
         .height = 4
