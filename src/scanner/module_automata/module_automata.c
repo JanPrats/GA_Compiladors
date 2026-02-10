@@ -1,9 +1,7 @@
 #include "module_automata.h"
 #include <string.h>
 
-static void set_int_list_end(int *arr, int cap) {
-    for (int i = 0; i < cap; i++) arr[i] = -1;
-}
+
 
 bool automata_is_accepting(const AutomataDFA* a, int st) {
     for (int i = 0; i < MAX_STATES && a->accepting_states[i] != -1; i++) {
