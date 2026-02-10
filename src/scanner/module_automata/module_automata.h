@@ -31,4 +31,6 @@ AutomataDFA automata_number_create(void);
 
 bool automata_is_accepting(const AutomataDFA* a, int st);
 
+void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_list, int num_automata);
+
  #endif
