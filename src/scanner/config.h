@@ -61,7 +61,13 @@ DBGCOUNT: messages should be sent to the stdout file.
 
 //For error Types when there is an error
 typedef enum{
-    INVALID_ARGUMENT //For now empty because idk which errors we consider and it is not my main focus now
+    ERR_NONE = 0,
+    ERR_INVALID_ARGUMENT,
+    ERR_FILE_NOT_FOUND,
+    ERR_TOKEN_NOT_RECOGNIZED,
+    ERR_TOKEN_TOO_LONG,
+    ERR_UNTERMINATED_LITERAL,
+    ERR_MAX_TOKENS_EXCEEDED
 } Error;
 
 //Depending on this we print in a format or in another in the outputfile
@@ -168,11 +174,11 @@ Category:           CAT_KEYWORD
 
 */
 
-//Not sure if we will need these 2
 typedef struct ErrorReport {
-    Error cat;                   //Category from the ones above
-    Step step;
-    int line; //Maybe not needed
+    Error error_type;            //Error type from the Error enum
+    Step step;                   //At which compilation step did it occur
+    int line;                    //Line number in source file
+    char message[MAX_LINE_LENGTH]; //Descriptive error message
 } ErrorReport;
 
 typedef struct CountReport {
