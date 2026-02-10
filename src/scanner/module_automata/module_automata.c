@@ -10,6 +10,36 @@ bool automata_is_accepting(const AutomataDFA* a, int st) {
     return false;
 }
 
+AutomataDFA keyword_automata = {
+    .alphabet = { 'i', 'f', 'o', 'r', 'w', 'h', 'l', 'e', 's' },
+    .states = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+    .start_state = 1,
+    .current_state = 1,
+    .accepting_states = { 12 },
+    .lookahead_acceptance = {  '(', '{',  '\n', '\t' },
+    .matrix = {
+        .states_rows = {
+            { .new_state = { 2, 10, 0, 0, 6, 0, 0, 3, 0 } }, 
+            { .new_state = { 0, 12, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 4, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 5 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 12, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 7, 0, 0, 0 } }, 
+            { .new_state = { 8, 0, 0, 0, 0, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 0, 0, 0, 0, 9, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 12, 0 } },
+            { .new_state = { 0, 11, 0, 0, 0, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 12, 0, 0, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
+        },
+        .width = 9,   
+        .height = 13   
+    },
+    .type = CAT_KEYWORD,
+    .dont_look_anymore = false
+};
+
 AutomataDFA return_automata = {
     .alphabet = { 'r', 'e', 't', 'u', 'n' },
     .states = { 0, 1, 2, 3, 4, 5, 6, 7 },
@@ -32,6 +62,34 @@ AutomataDFA return_automata = {
         .height = 8   
     },
     .type = CAT_KEYWORD,
+    .dont_look_anymore = false
+};
+
+AutomataDFA type_automata = {
+    .alphabet = { 'i', 'n', 't', 'c', 'h', 'a', 'r', 'v', 'o', 'd' },
+    .states = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+    .start_state = 1,
+    .current_state = 1,
+    .accepting_states = { 10 },
+    .lookahead_acceptance = {  '*', '\n', '\t', ')' },
+    .matrix = {
+        .states_rows = {
+            { .new_state = { 2, 0, 0, 4, 0, 0, 0, 7, 0, 0 } }, 
+            { .new_state = { 0, 3, 0, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 10, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 5, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 6, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 10, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 0 } }, 
+            { .new_state = { 9, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, 
+            { .new_state = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }
+        },
+        .width = 10,   
+        .height = 11,   
+    },
+    .type = CAT_TYPE,
     .dont_look_anymore = false
 };
 
