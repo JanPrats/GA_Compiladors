@@ -1,13 +1,66 @@
 #include <string.h>
 #include "module_automata.h"
 
+
+AutomataDFA identifer_automata = {
+    .alphabet = {
+        // Minúsculas (1)   [a-z]
+        {'a', 1}, {'b', 1}, {'c', 1}, {'d', 1}, {'e', 1}, {'f', 1}, {'g', 1}, {'h', 1}, {'i', 1},
+        {'j', 1}, {'k', 1}, {'l', 1}, {'m', 1}, {'n', 1}, {'ñ', 1}, {'o', 1}, {'p', 1}, {'q', 1},
+        {'r', 1}, {'s', 1}, {'t', 1}, {'u', 1}, {'v', 1}, {'w', 1}, {'x', 1}, {'y', 1}, {'z', 1},
+        
+        // Mayúsculas (1)   [A-Z]
+        {'A', 1}, {'B', 1}, {'C', 1}, {'D', 1}, {'E', 1}, {'F', 1}, {'G', 1}, {'H', 1}, {'I', 1},
+        {'J', 1}, {'K', 1}, {'L', 1}, {'M', 1}, {'N', 1}, {'Ñ', 1}, {'O', 1}, {'P', 1}, {'Q', 1},
+        {'R', 1}, {'S', 1}, {'T', 1}, {'U', 1}, {'V', 1}, {'W', 1}, {'X', 1}, {'Y', 1}, {'Z', 1},
+        
+        // Dígitos (2)      [0-9]
+        {'0', 2}, {'1', 2}, {'2', 2}, {'3', 2}, {'4', 2}, {'5', 2}, {'6', 2}, {'7', 2}, {'8', 2}, {'9', 2},
+        
+        // Otros caracteres (0)
+        {' ', 0}, {'\t', 0}, {'\n', 0}, {'\r', 0},
+        {'.', 0}, {',', 0}, {';', 0}, {':', 0},
+        {'!', 0}, {'¡', 0}, {'?', 0}, {'¿', 0},
+        {'"', 0}, {'\'', 0}, {'`', 0},
+        {'(', 0}, {')', 0}, {'[', 0}, {']', 0}, {'{', 0}, {'}', 0},
+        {'+', 0}, {'-', 0}, {'*', 0}, {'/', 0}, {'%', 0},
+        {'=', 0}, {'<', 0}, {'>', 0},
+        {'&', 0}, {'|', 0}, {'^', 0}, {'~', 0},
+        {'@', 0}, {'#', 0}, {'$', 0}, {'_', 0},
+        {'\\', 0}
+    },
+    .states = { 0, 1, 2 },
+    .start_state = 1,
+    .current_state = 1,
+    .accepting_states = { 2 },
+    .matrix = {
+        .states_rows = {//  [Other Characters] [a-zA-Z] [0-9]
+            { .new_state = { 0, 0, 0 } }, // [Ø state] (NULL state)
+            { .new_state = { 0, 2, 0 } }, // [start state]
+            { .new_state = { 0, 2, 2 } }  // [accepting state]
+        },
+        .width = 3,   
+        .height = 3,   
+    },
+    .type = CAT_IDENTIFIER,
+    .dont_look_anymore = false
+};
+
+/*
+Maybe this would be more efficient:
+for (char c = 'a'; c <= 'z'; c++) alphabet[i++] = (SymbolVocab){c, COL_LETTER};
+for (char c = 'A'; c <= 'Z'; c++) alphabet[i++] = (SymbolVocab){c, COL_LETTER};
+for (char c = '0'; c <= '9'; c++) alphabet[i++] = (SymbolVocab){c, COL_DIGIT};
+
+but it's just to make it fancy tbh, lets leave it like this
+*/
+
 AutomataDFA keyword_automata = {
     .alphabet = { 'i', 'f', 'o', 'r', 'w', 'h', 'l', 'e', 's' },
     .states = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
     .start_state = 1,
     .current_state = 1,
     .accepting_states = { 12 },
-    .lookahead_acceptance = {  '(', '{',  '\n', '\t' },
     .matrix = {
         .states_rows = {
             { .new_state = { 2, 10, 0, 0, 6, 0, 0, 3, 0 } }, 
@@ -37,7 +90,6 @@ AutomataDFA return_automata = {
     .start_state = 1,
     .current_state = 1,
     .accepting_states = { 7 },
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{' },
     .matrix = {
         .states_rows = {
             { .new_state = { 2, 0, 0, 0, 0 } }, 
@@ -62,7 +114,6 @@ AutomataDFA type_automata = {
     .start_state = 1,
     .current_state = 1,
     .accepting_states = { 10 },
-    .lookahead_acceptance = {  '*', '\n', '\t', ')' },
     .matrix = {
         .states_rows = {
             { .new_state = { 2, 0, 0, 4, 0, 0, 0, 7, 0, 0 } }, 
@@ -91,13 +142,6 @@ AutomataDFA number_automata = {
     .start_state = 1,
     .current_state = 1,
     .accepting_states = { 2 },
-    .lookahead_acceptance = {
-        ' ', '\t', '\n',
-        ';', ',', '.', 
-        '(', ')', '{', '}', '[', ']',
-        '+', '=', '*', '>'
-    },
-
     .matrix = {
         .states_rows = {
             { .new_state = { 2,2,2,2,2,2,2,2,2,2 } },
@@ -118,7 +162,6 @@ AutomataDFA specials_automata = {
     .start_state = 0,
     .current_state = 0,
     .accepting_states = {1, 2},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
     .matrix = {            
         .states_rows = {
             { .new_state = { 1, 1, 1, 1, 1, 1, 1, 1} }, 
@@ -138,7 +181,6 @@ AutomataDFA operators_automata = {
     .start_state = 0,
     .current_state = 0,
     .accepting_states = {1, 2, 3, 4, 5, 6},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
     .matrix = {            
         .states_rows = {
             { .new_state = { 2, 4, 1, 3} }, 
@@ -164,7 +206,6 @@ AutomataDFA literal_automata = {
     .start_state = 0,
     .current_state = 0,
     .accepting_states = {2},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', ',', '.', ')', '}', '+', '=', '*', '>' },
     .matrix = {
         .states_rows = {
             { .new_state = { 1 } },  

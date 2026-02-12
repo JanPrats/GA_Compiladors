@@ -176,7 +176,7 @@ typedef struct {
 } Status;
 
 typedef struct StateRow {
-    int new_state[MAX_STATES]; // Contains a state_number for each state-char pair S0_row = [1,0,3,0,2] (assume symbols from the alphabet are always in the same order)
+    int new_state[MAX_ALPHABET_SIZE]; // Contains a state_number for each state-char pair S0_row = [1,0,3,0,2] (assume symbols from the alphabet are always in the same order)
 } StateRow;
 //???SHOULD BE [MAX_ALPHABET_SIZE] INSTEAD OF [MAX_STATES] ??????????????
 
@@ -192,12 +192,11 @@ typedef struct SymbolVocab {
 } SymbolVocab;
 
 typedef struct AutomataDFA {
-    SymbolVocab alphabet[MAX_ALPHABET_SIZE];              // [w,h,i,l,e] {if we need w for transition matrix it is 0, for h it is 1, etc; as they appear} //Could also be a dictionary
-    int states[MAX_STATES];                         // [1,2,3,4,5,6,7] {could be just an int, but idk just in case}
+    SymbolVocab alphabet[MAX_ALPHABET_SIZE];        //
+    int states[MAX_STATES];                         // [0,1,2,3] {could be just an int, but idk just in case}
     int start_state;                                // 1
     int current_state;                              // current_state (cs) changes when we read characters (cs == 1 and read w --> cs == 2)
-    int accepting_states[MAX_STATES];               // [6] {could be more}
-    char lookahead_acceptance[MAX_ALPHABET_SIZE];   // ["("," ","\n", EOF]
+    int accepting_states[MAX_STATES];               // [3] {could be more}
     TransitionMatrix matrix;                        // [[2,7,7,7,7],[7,3,7,7,7],[7,7,4,7,7],[7,7,7,5,7],[7,7,7,7,6],[7,7,7,7,7],[7,7,7,7,7]]
     Category type;                                  // CAT_KEYWORD (it is an enum, so include config.h to have the struct)
     bool dont_look_anymore;                         // If we have already finished the execution and we do not want to keep looking
@@ -215,10 +214,12 @@ Category:           CAT_KEYWORD
 
 */
 
+//Probably this single stuct is not used
 typedef struct AutomataList {
     AutomataDFA all_automata[MAX_AUTOMATAS];
     int count;
 } AutomataList;
+//////////////////////
 
 //Not sure if we will need these 2
 typedef struct ErrorReport {
