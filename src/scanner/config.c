@@ -4,6 +4,70 @@
 
 Status status;  // ← THIS allocates the memory (only once)
 
+//Our general functions
+const char* category_to_string(Category cat) {
+    switch (cat) {
+        case CAT_NUMBER:        return "NUMBER";
+        case CAT_IDENTIFIER:    return "IDENTIFIER";
+        case CAT_KEYWORD:       return "KEYWORD";
+        case CAT_TYPE:          return "TYPE";
+        case CAT_LITERAL:       return "LITERAL";
+        case CAT_OPERATOR:      return "OPERATOR";
+        case CAT_SPECIALCHAR:   return "SPECIALCHAR";
+        case CAT_NONRECOGNIZED: return "NONRECOGNIZED";
+        default:                return "UNKNOWN";
+    }
+}
+
+void add_token_to_list(char* lexeme, Category cat) {
+
+    if (status.all_tokens.count >= MAX_TOKENS)
+        return; // prevent overflow
+
+    Token *t = &status.all_tokens.tokens[status.all_tokens.count];
+
+    strncpy(t->lexeme, lexeme, MAX_TOKEN_NAME - 1);
+    t->lexeme[MAX_TOKEN_NAME - 1] = '\0';  // ensure termination
+
+    t->cat = cat;
+    t->line = status.line;
+
+    status.all_tokens.count++;
+}
+
+
+void buffer_clear(BufferAuto *buffer) {
+    buffer->len = 0;
+    buffer->lexeme[0] = '\0';
+}
+
+void buffer_add(BufferAuto *buffer, char c) {
+    if (buffer->len < MAX_TOKEN_NAME - 1) {
+        buffer->lexeme[buffer->len++] = c;
+        buffer->lexeme[buffer->len] = '\0';
+    }
+}
+
+void buffer_append(BufferAuto *dest, const BufferAuto *src) { //Does not delete the contents of the original buffer
+    int i = 0;
+    while (i < src->len && dest->len < MAX_TOKEN_NAME - 1) {
+        dest->lexeme[dest->len++] = src->lexeme[i++];
+    }
+    dest->lexeme[dest->len] = '\0';
+}
+
+void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it, like it moves the content from one to another
+    int i = 0;
+    while (i < src->len && dest->len < MAX_TOKEN_NAME - 1) {
+        dest->lexeme[dest->len++] = src->lexeme[i++];
+    }
+    dest->lexeme[dest->len] = '\0';
+
+    buffer_clear(src);
+}
+
+
+
 
 //Functions that were here in the template
 

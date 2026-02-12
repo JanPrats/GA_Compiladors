@@ -55,6 +55,9 @@ DBGCOUNT: messages should be sent to the stdout file.
 #define CORRECT_RETURN 0
 #define HELP_RETURN 1
 
+#define ACCEPT_TOKEN 2
+#define STOP_AUTOMATA 3
+
 
 //Other
 #define ON 1        //FOR DEBUG_F
@@ -74,7 +77,8 @@ typedef enum{
     ERR_TOKEN_NOT_RECOGNIZED,
     ERR_TOKEN_TOO_LONG,
     ERR_UNTERMINATED_LITERAL,
-    ERR_MAX_TOKENS_EXCEEDED
+    ERR_MAX_TOKENS_EXCEEDED,
+    ERR_EMPTY_FILE
 } Error;
 
 //Depending on this we print in a format or in another in the outputfile
@@ -120,11 +124,11 @@ typedef struct Token {
     // bool is_defined; //Not sure if needed
 } Token;
 
-// Dictionary oftokens to know there is no other token which name already used
-typedef struct IdendifierDict {
-    Token identifiers[MAX_TOKENS]; //Not sure if token or just a string (lexeme)
-    int count;                      //I will leave the option to add any relevant parameter such as count
-} IdendifierDict;
+// DICTIONARY NOT USED
+// typedef struct IdendifierDict {
+//     Token identifiers[MAX_TOKENS]; //Not sure if token or just a string (lexeme)
+//     int count;                      //I will leave the option to add any relevant parameter such as count
+// } IdendifierDict;
 
 //List of tokens as thy appear in the ifile
 typedef struct ListTokens {
@@ -162,7 +166,6 @@ typedef struct {
     FILE* error_file;
 
     ListTokens all_tokens;
-    IdendifierDict IdDict;
 
 	int line;           //In which line are we
 
@@ -183,8 +186,13 @@ typedef struct TransitionMatrix {
     int height; //Number of states
 } TransitionMatrix;
 
+typedef struct SymbolVocab {
+    char character;
+    int column;
+} SymbolVocab;
+
 typedef struct AutomataDFA {
-    char alphabet[MAX_ALPHABET_SIZE];              // [w,h,i,l,e] {if we need w for transition matrix it is 0, for h it is 1, etc; as they appear} //Could also be a dictionary
+    SymbolVocab alphabet[MAX_ALPHABET_SIZE];              // [w,h,i,l,e] {if we need w for transition matrix it is 0, for h it is 1, etc; as they appear} //Could also be a dictionary
     int states[MAX_STATES];                         // [1,2,3,4,5,6,7] {could be just an int, but idk just in case}
     int start_state;                                // 1
     int current_state;                              // current_state (cs) changes when we read characters (cs == 1 and read w --> cs == 2)
@@ -228,6 +236,18 @@ typedef struct CountReport {
     CountVars overall_counts;
 } CountReport;
 
+
+//helper structs
+typedef struct Two_ints {
+    int actual;
+    int lookahead;
+} Two_ints;
+
+typedef struct BufferAuto {
+    char lexeme[MAX_TOKEN_NAME];
+    int len;
+} BufferAuto;
+
 extern Status status;   // declaration, NOT definition
 
 // Path to the logs directory: put your full path, the directory has to exist
@@ -236,15 +256,16 @@ extern Status status;   // declaration, NOT definition
 
 // Function prototypes
 FILE* set_output_test_file(const char* filename);
-void status_init(
-    Outformat oform,
-    bool debug,
-    bool countconfig,
-    const char* ifile_name,
-    const char* ofile_name,
-    FILE* ifile,
-    FILE* ofile,
-    int line
-);
 
+const char* category_to_string(Category cat);
+
+void add_token_to_list(char* lexeme, Category cat);
+
+void buffer_clear(BufferAuto *buffer);
+
+void buffer_add(BufferAuto *buffer, char c);
+
+void buffer_append(BufferAuto *dest, const BufferAuto *src);
+
+void buffer_move_append(BufferAuto *dest, BufferAuto *src);
 #endif // CONFIG_FILES_H
