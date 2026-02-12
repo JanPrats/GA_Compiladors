@@ -7,13 +7,15 @@
 // operators, special chars, literals, non-recognized) and stores them in automata_list.
 // Sets *count to the number of automata created.
 // Each DFA is created by its respective create function:
-//   - automata_number_create()
-//   - automata_keyword_create()     
-//   - automata_type_create()        
-//   - automata_identifier_create()  
-//   - automata_operator_create()    
-//   - automata_special_create()     
-//   - automata_literal_create()    
-//   - automata_nonrecognized_create() 
-void init_automata(AutomataDFA* automata_list, int* count);
+//   - automata_number_create()         
+//   - automata_keyword_create()        
+//   - automata_type_create()           
+//   - automata_identifier_create()     
+//   - automata_operator_create()       
+//   - automata_special_create()        
+//   - automata_literal_create()        
+//   - automata_nonrecognized_create()  
+
+void init_status_scn();
+void init_automata();
 #endif // MODULE_INIT_H

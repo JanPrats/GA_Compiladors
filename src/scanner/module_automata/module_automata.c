@@ -138,7 +138,7 @@ static int update_automata(AutomataDFA* a, char c, char lookahead_char) {
     
     // Si el caràcter no està en l'alfabet, l'autòmata rebutja
     if (!found) {
-        return 0;
+        return -2;
     }
     
     // Actualitzar l'estat actual amb la matriu de transició
@@ -146,7 +146,7 @@ static int update_automata(AutomataDFA* a, char c, char lookahead_char) {
     
     // Si new_state és 0, significa que no hi ha transició vàlida (estat de rebuig)
     if (new_state == 0) {
-        return 0;
+        return -2;
     }
     
     a->current_state = new_state;
@@ -165,7 +165,7 @@ static int update_automata(AutomataDFA* a, char c, char lookahead_char) {
         if (automata_is_accepting(a, a->current_state)) {
             return a->type; // Retorna la categoria del token
         } else {
-            return 0; // No està en estat d'acceptació
+            return -2; // No està en estat d'acceptació
         }
     }
     
@@ -185,7 +185,7 @@ void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_
     bool new = true;
     
     //INICI CODI QUE VAM FER AHIR -----------------------------------------------------------------------------------
-    while ((c = fgetc(input_file)) != EOF) {
+    while ((c = fgetc(status.ifile)) != EOF) {
         // Si comencem un nou token, reinicialitzar tots els autòmata
         if (new) {
             for (int i = 0; i < num_automata; i++) {
@@ -196,9 +196,9 @@ void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_
         }
         
         // Obtenir el següent caràcter per lookahead (sense consumir-lo)
-        char lookahead_char = fgetc(input_file);
+        char lookahead_char = fgetc(status.ifile);
         if (lookahead_char != EOF) {
-            ungetc(lookahead_char, input_file); // Retornar el caràcter al buffer
+            ungetc(lookahead_char, status.ifile); // Retornar el caràcter al buffer
         }
         
         // Processar cada autòmata
@@ -208,8 +208,8 @@ void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_
                 
                 if (value >= 0 && value != -1) { // És una Category vàlida
                     new = true;
-                    fprintf(output_file, "<%c, %d>\n", c, value);
-                } else if (value == 0) {
+                    fprintf(status.ofile, "<%c, %d>\n", c, value); //Crec que aquí hauria de saltarse la resta del bucle
+                } else if (value == -2) { 
                     automata_list[i].dont_look_anymore = true;
                 } else {
                     // value == -1, continuar processant
@@ -233,7 +233,7 @@ void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_
             // Cap autòmata ha reconegut el token
             Category not_identified = CAT_NONRECOGNIZED;
             new = true;
-            fprintf(output_file, "<%c, %d>\n", c, not_identified);
+            fprintf(status.ofile, "<%c, %d>\n", c, not_identified);
         }
     }
 }

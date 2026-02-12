@@ -4,41 +4,6 @@
 
 Status status;  // ← THIS allocates the memory (only once)
 
-void status_init(
-    Outformat oform,
-    bool debug,
-    bool countconfig,
-    const char* ifile_name,
-    const char* ofile_name,
-    FILE* ifile,
-    FILE* ofile,
-    int line
-) {
-    status.oform = oform;
-    status.debug = debug;
-    status.countconfig = countconfig;
-
-    if (ifile_name)
-        strncpy(status.ifile_name, ifile_name, MAX_FILENAME - 1);
-    else
-        status.ifile_name[0] = '\0';
-
-    if (ofile_name)
-        strncpy(status.ofile_name, ofile_name, MAX_FILENAME - 1);
-    else
-        status.ofile_name[0] = '\0';
-
-    status.ifile_name[MAX_FILENAME - 1] = '\0';
-    status.ofile_name[MAX_FILENAME - 1] = '\0';
-
-    status.ifile = ifile;
-    status.ofile = ofile;
-
-    status.line = (line >= 0) ? line : 0; // ← default behavior
-}
-
-
-
 
 //Functions that were here in the template
 
@@ -86,7 +51,7 @@ void generate_timestamped_log_filename(const char* base_name, char* output, size
              filename,
              extension);
 
-    fprintf(ofile, "Generated log filename (with time stamp): %s\n", output);
+    fprintf(status.ofile, "Generated log filename (with time stamp): %s\n", output);
 
 }
 
