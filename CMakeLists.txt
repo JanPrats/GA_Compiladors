@@ -60,6 +60,7 @@ add_subdirectory(scanner)
 add_executable(scanner
     main.c
     config.c
+    count.c
 )
 
 # add_subdirectory(module_init)

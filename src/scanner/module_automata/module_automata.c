@@ -1,120 +1,15 @@
 #include "module_automata.h"
 #include <string.h>
 
-static void set_int_list_end(int *arr, int cap) {
-    for (int i = 0; i < cap; i++) arr[i] = -1;
-}
-
-bool automata_is_accepting(const AutomataDFA* a, int st) {
-    for (int i = 0; i < MAX_STATES && a->accepting_states[i] != -1; i++) {
-        if (a->accepting_states[i] == st) return true;
+bool automata_is_accepting(const AutomataDFA *a, int st)
+{
+    for (int i = 0; i < MAX_STATES && a->accepting_states[i] != -1; i++)
+    {
+        if (a->accepting_states[i] == st)
+            return true;
     }
     return false;
 }
-
-AutomataDFA return_automata = {
-    .alphabet = { 'r', 'e', 't', 'u', 'n' },
-    .states = { 0, 1, 2, 3, 4, 5, 6, 7 },
-    .start_state = 1,
-    .current_state = 1,
-    .accepting_states = { 7 },
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{' },
-    .matrix = {
-        .states_rows = {
-            { .new_state = { 2, 0, 0, 0, 0 } }, 
-            { .new_state = { 0, 3, 0, 0, 0 } },
-            { .new_state = { 0, 0, 4, 0, 0 } },
-            { .new_state = { 0, 0, 0, 5, 0 } },
-            { .new_state = { 6, 0, 0, 0, 0 } },
-            { .new_state = { 0, 0, 0, 0, 7 } },
-            { .new_state = { 0, 0, 0, 0, 0 } },
-            { .new_state = { 0, 0, 0, 0, 0 } }
-        },
-        .width = 5,   
-        .height = 8   
-    },
-    .type = CAT_KEYWORD,
-    .dont_look_anymore = false
-};
-
-
-AutomataDFA automata_number_create(void) {
-    AutomataDFA a;
-    memset(&a, 0, sizeof(a));
-
-    a.type = CAT_NUMBER;
-
-    //Alphabet
-    strcpy(a.alphabet, "0123456789");
-    a.matrix.width = 10;
-
-    //States: 1 init, 2 accepting, 3 sink
-    set_int_list_end(a.states, MAX_STATES);
-    a.states[0] = 1;
-    a.states[1] = 2;
-    a.states[2] = 3;
-    a.matrix.height = 3;
-    a.start_state = 1;
-    a.current_state = a.start_state;
-    set_int_list_end(a.accepting_states, MAX_STATES);
-    a.accepting_states[0] = 2;
-
-    // Lookahead acceptance: delimitadores típicos tras número
-    strcpy(a.lookahead_acceptance, " \t\n;,.(){}[]+=*>");
-    a.dont_look_anymore = false;
-
-    for (int col = 0; col < a.matrix.width; col++) {
-        a.matrix.states_rows[0].new_state[col] = 2; // from state 1
-        a.matrix.states_rows[1].new_state[col] = 2; // from state 2
-        a.matrix.states_rows[2].new_state[col] = 3; // from state 3
-    }
-    return a;
-}
-
-
-AutomataDFA specials_automata = {
-    .alphabet = { ';', ',', '(', ')', '{', '}', '[', ']'},
-    .states = {0, 1, 2},
-    .start_state = 0,
-    .current_state = 0,
-    .accepting_states = {1, 2},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
-    .matrix = {            
-        .states_rows = {
-            { .new_state = { 1, 1, 1, 1, 1, 1, 1, 1} }, 
-            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2} }, 
-            { .new_state = { 2, 2, 2, 2, 2, 2, 2, 2} }
-        },
-        .width = 8,   
-        .height = 3  
-    },
-    .type = CAT_SPECIALCHAR,
-    .dont_look_anymore = false
-};
-
-AutomataDFA operators_automata = {
-    .alphabet = { '+', '-', '=', '!', '*', '/'},
-    .states = {0, 1, 2, 3, 4, 5, 6},
-    .start_state = 0,
-    .current_state = 0,
-    .accepting_states = {1, 2, 3, 4, 5, 6},
-    .lookahead_acceptance = { ' ', ';', '\n', '\t', '(', '{', '[', ']', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' },
-    .matrix = {            
-        .states_rows = {
-            { .new_state = { 2, 4, 1, 3} }, 
-            { .new_state = { 6, 6, 5, 6} }, 
-            { .new_state = { 5, 6, 6, 6} }, 
-            { .new_state = { 6, 6, 6, 5} }, 
-            { .new_state = { 6, 5, 6, 6} }, 
-            { .new_state = { 6, 6, 6, 6} }, 
-            { .new_state = { 6, 6, 6, 6} } 
-        },
-        .width = 4,   
-        .height = 7  
-    },
-    .type = CAT_OPERATOR,
-    .dont_look_anymore = false
-};
 
 /**
  * Actualitza l'estat d'un autòmata amb el caràcter llegit
@@ -123,117 +18,137 @@ AutomataDFA operators_automata = {
  * @param lookahead_char Següent caràcter (per verificar lookahead)
  * @return Category del token si acceptat, 0 si rebutjat, -1 si continua processant
  */
-static int update_automata(AutomataDFA* a, char c, char lookahead_char) {
-    // Buscar el caràcter c en el vocabulari de l'autòmata
-    int count = 0;
-    bool found = false;
-    
-    for (int i = 0; i < MAX_ALPHABET_SIZE && a->alphabet[i] != '\0'; i++) {
-        if (a->alphabet[i] == c) {
-            found = true;
+static int update_automata(AutomataDFA *a, char c)
+{
+    // Buscar l'índex del caràcter c dins l'alfabet de l'autòmata
+    int idx = -1;
+    for (int i = 0; i < MAX_ALPHABET_SIZE && a->alphabet[i] != '\0'; i++)
+    {
+        if (a->alphabet[i] == c)
+        {
+            idx = i; // Índex del símbol a la matriu
             break;
         }
-        count++;
     }
-    
-    // Si el caràcter no està en l'alfabet, l'autòmata rebutja
-    if (!found) {
-        return -2;
-    }
-    
-    // Actualitzar l'estat actual amb la matriu de transició
-    int new_state = a->matrix.states_rows[a->current_state].new_state[count];
-    
-    // Si new_state és 0, significa que no hi ha transició vàlida (estat de rebuig)
-    if (new_state == 0) {
-        return -2;
-    }
-    
+
+    // Si el caràcter no està a l'alfabet, l'autòmata rebutja
+    if (idx == -1)
+        return 0;
+
+    // Obtenir el nou estat segons la matriu de transició
+    int new_state = a->matrix.states_rows[a->current_state].new_state[idx];
+
+    // Si la transició és 0, no hi ha estat vàlid → rebutjat
+    if (new_state == 0)
+        return 0;
+
+    // Actualitzar estat actual
     a->current_state = new_state;
-    
-    // Verificar si el lookahead està en lookahead_acceptance
-    bool lookahead_valid = false;
-    for (int i = 0; i < MAX_ALPHABET_SIZE && a->lookahead_acceptance[i] != '\0'; i++) {
-        if (a->lookahead_acceptance[i] == lookahead_char) {
-            lookahead_valid = true;
-            break;
+
+    // Afegir el caràcter al buffer
+    a->buffer[a->buffer_len++] = c;
+
+    // Comprovar si el nou estat és d'acceptació
+    for (int i = 0; i < MAX_STATES && a->accepting_states[i] != 0; i++)
+    {
+        if (a->accepting_states[i] == new_state)
+        {
+            return a->type; // Estat d'acceptació → retornar categoria
         }
     }
     
-    // Si el lookahead és vàlid, verificar si estem en un estat d'acceptació
-    if (lookahead_valid) {
-        if (automata_is_accepting(a, a->current_state)) {
-            return a->type; // Retorna la categoria del token
-        } else {
-            return -2; // No està en estat d'acceptació
-        }
-    }
+    // // Si el lookahead és vàlid, verificar si estem en un estat d'acceptació
+    // if (lookahead_valid) {
+    //     if (automata_is_accepting(a, a->current_state)) {
+    //         return a->type; // Retorna la categoria del token
+    //     } else {
+    //         return -2; // No està en estat d'acceptació
+    //     }
+    // }
     
-    // Continuar processant
+    // // Continuar processant
+
+    // Continua processant
     return -1;
 }
 
 /**
- * Funció driver que processa un fitxer d'entrada amb múltiples autòmata
- * @param input_file Fitxer d'entrada
- * @param output_file Fitxer de sortida
- * @param automata_list Array d'autòmata
- * @param num_automata Nombre d'autòmata en la llista
+ * Driver que processa un fitxer amb múltiples autòmata DFA
+ * Escriu tokens reconeguts i no reconeguts en fitxers separats
  */
-void automata_driver(FILE* input_file, FILE* output_file, AutomataDFA* automata_list, int num_automata) {
-    char c;
-    bool new = true;
-    
-    //INICI CODI QUE VAM FER AHIR -----------------------------------------------------------------------------------
-    while ((c = fgetc(status.ifile)) != EOF) {
-        // Si comencem un nou token, reinicialitzar tots els autòmata
-        if (new) {
-            for (int i = 0; i < num_automata; i++) {
-                automata_list[i].dont_look_anymore = false;
-                automata_list[i].current_state = automata_list[i].start_state;
-            }
-            new = false;
-        }
-        
-        // Obtenir el següent caràcter per lookahead (sense consumir-lo)
-        char lookahead_char = fgetc(status.ifile);
-        if (lookahead_char != EOF) {
-            ungetc(lookahead_char, status.ifile); // Retornar el caràcter al buffer
-        }
-        
-        // Processar cada autòmata
-        for (int i = 0; i < num_automata; i++) {
-            if (!automata_list[i].dont_look_anymore) { // Si dont_look_anymore == true acabarem el bucle for 
-                int value = update_automata(&automata_list[i], c, lookahead_char);
-                
-                if (value >= 0 && value != -1) { // És una Category vàlida
-                    new = true;
-                    fprintf(status.ofile, "<%c, %d>\n", c, value); //Crec que aquí hauria de saltarse la resta del bucle
-                } else if (value == -2) { 
+void automata_driver(FILE *input_file, FILE *recognized_file, FILE *unrecognized_file, AutomataDFA *automata_list, int num_automata)
+{
+    char c; // Caràcter llegit del fitxer
+
+    while ((c = fgetc(input_file)) != EOF)
+    {
+        bool accepted = false; // Indica si algun autòmata ha acceptat aquest token
+
+        // Iterar sobre tots els autòmata
+        for (int i = 0; i < num_automata; i++)
+        {
+            if (!automata_list[i].dont_look_anymore)
+            { // Només processar actius
+                int value = update_automata(&automata_list[i], c);
+
+                if (value > 0)
+                {
+                    // L'autòmata ha arribat a un estat d'acceptació
+                    // Escriure el token reconegut al fitxer corresponent
+                    fprintf(recognized_file, "<%.*s, %d>\n",
+                            automata_list[i].buffer_len,
+                            automata_list[i].buffer,
+                            value);
+
+                    accepted = true; // Marcar que s'ha acceptat un token
+                    break;           // Reiniciarem tots els autòmata després
+                }
+                else if (value == 0)
+                {
+                    // L'autòmata ha rebutjat, marcar com a "no mirar més"
                     automata_list[i].dont_look_anymore = true;
-                } else {
-                    // value == -1, continuar processant
-                    continue;
+                    automata_list[i].buffer_len = 0;
+                }
+                // value == -1 → continua processant, no fem res
+            }
+        }
+
+        if (accepted)
+        {
+            // Reinicialitzar tots els autòmata per començar un nou token
+            for (int i = 0; i < num_automata; i++)
+            {
+                automata_list[i].current_state = automata_list[i].start_state;
+                automata_list[i].buffer_len = 0;
+                automata_list[i].dont_look_anymore = false;
+            }
+        }
+        else
+        {
+            // Comprovar si tots els autòmata han rebutjat el caràcter
+            bool all_done = true;
+            for (int i = 0; i < num_automata; i++)
+            {
+                if (!automata_list[i].dont_look_anymore)
+                {
+                    all_done = false;
+                    break;
                 }
             }
-        }
-        
-        // Verificar si tots els autòmata han deixat de mirar
-        bool all_done = true;
-        for (int i = 0; i < num_automata; i++) {
-            if (!automata_list[i].dont_look_anymore) {
-                all_done = false;
-                break;
-            }
-        }
-        
-        //FI DEL CODI QUE VAM FER AHIR -----------------------------------------------------------------------------------
 
-        if (all_done) {
-            // Cap autòmata ha reconegut el token
-            Category not_identified = CAT_NONRECOGNIZED;
-            new = true;
-            fprintf(status.ofile, "<%c, %d>\n", c, not_identified);
+            if (all_done)
+            {
+                // Escriure el caràcter com a no reconegut en el fitxer corresponent
+                fprintf(unrecognized_file, "<%c, %d>\n", c, CAT_NONRECOGNIZED);
+
+                // Reinicialitzar tots els autòmata per començar de nou
+                for (int i = 0; i < num_automata; i++)
+                {
+                    automata_list[i].current_state = automata_list[i].start_state;
+                    automata_list[i].buffer_len = 0;
+                    automata_list[i].dont_look_anymore = false;
+                }
+            }
         }
     }
 }

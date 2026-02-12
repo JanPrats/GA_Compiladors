@@ -6,7 +6,6 @@
 
 
 
-AutomataDFA automata_number_create(void);
 
 bool automata_is_accepting(const AutomataDFA* a, int st);
 
