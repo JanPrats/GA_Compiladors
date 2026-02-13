@@ -193,7 +193,7 @@ AutomataDFA return_automata = {
         .height = 8,
     },
 
-    .type = CAT_RETURN,
+    .type = CAT_KEYWORD,
     .dont_look_anymore = false
 };
 
