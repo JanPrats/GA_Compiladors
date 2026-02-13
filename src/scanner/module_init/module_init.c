@@ -1,5 +1,6 @@
 #include "../config.h"
 
+void init_status_scn(void);
 
 void print_arguments(int argc, char *argv[]) {
     fprintf(status.ofile, "Arguments received (%d):\n", argc);
@@ -65,7 +66,10 @@ void init_status_scn(){
 }
 
 void init_automata(AutomataList* automata_list){
-    //for
+    automata_list->num_automata = NUM_AUTOMATA;
+    for(int i = 0; i < NUM_AUTOMATA; i++){
+        automata_list->automatas[i] = ALL_AUTOMATA[i];
+    }
 }
 
 // FILE* set_output_test_file(const char* filename);

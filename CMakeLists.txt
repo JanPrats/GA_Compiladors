@@ -49,31 +49,4 @@ message(STATUS " - (${PROJECT_NAME}) Added src/ directory")
 add_subdirectory(tests)
 message(STATUS " - (${PROJECT_NAME}) Added tests/ directory")
 
-# Optionally build main executable if needed 
-# This executable links together all module libraries.
-# (to have modular test for each module in parallel)
-# add_executable(modules_template_main src/main.c)
-# target_link_libraries(modules_template_main PRIVATE module_parser module_args module_2 utils module_comments_remove module_define module_errors module_ifdef_endif module_include module_macros)
-# message(STATUS " - (${PROJECT_NAME}) Modules Template Main executable 'modules_template_main' linked with all modules including module_parser")
-# preprocessor ignored for now
-add_subdirectory(scanner)
-add_executable(scanner
-    main.c
-    config.c
-    count.c
-)
-
-# add_subdirectory(module_init)
-# add_subdirectory(module_error)
-# add_subdirectory(module_automata)
-
-# target_link_libraries(scanner PRIVATE
-#     module_init
-#     module_error
-#     module_automata
-# )
-
-
-target_include_directories(scanner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
 

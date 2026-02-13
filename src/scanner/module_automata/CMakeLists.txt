@@ -1,24 +1,28 @@
 # -----------------------------------------------------
-# src/module1/CMakeLists.txt
-# CMakeLists.txt for Module_2 
+# src/scanner/module_automata/CMakeLists.txt
+# CMakeLists.txt for module_automata
 #
-# This file defines the module_2 static library. It is compiled independently
-# and can be tested separately.
-# It is included from the top-level CMakeLists.txt via `add_subdirectory(src/module_2)`.
-# The module is compiled as a static library and can be linked by main programs or tests.
+# This module implements the DFA (Deterministic Finite Automata) engines
+# for lexical analysis. It includes:
+# - Individual DFA automata for each token category
+# - Automata driver that processes input and generates tokens
+# - Token classification and output
+#
+# It is compiled as a static library and linked into the scanner executable.
+# Note: define_automata.c is a helper for automata creation.
+# Others include: module_automata.c, and multiple category-specific automata files.
 # -----------------------------------------------------
 
-# Create the static library from the module_2 source file
-add_library(module_2 module_2.c)
+# Create the static library from the module_automata source files
+add_library(module_automata STATIC
+    module_automata.c
+    define_automata.c
+)
 
 # Include the current source directory for header file access
-# Since it is PRIVATE, the includes must include the path to the headers
-target_include_directories(module_2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(module_automata PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Link utils because module_2 depends on utils
-target_link_libraries(module_2 PRIVATE utils)
-
-# Print a status message during CMake configuration to confirm module_2 is processed
-message(STATUS "(${PROJECT_NAME}) Module_2 configured: Added as static library")
+# Print a status message during CMake configuration
+message(STATUS "(${PROJECT_NAME}) module_automata configured: Added as static library")
 
 # Optionally, you can set properties or compile options specific to this module

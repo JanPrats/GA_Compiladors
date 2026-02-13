@@ -1,7 +1,7 @@
 #ifndef MODULE_AUTOMATA_H
 #define MODULE_AUTOMATA_H
 #include <stdbool.h>
-#include "config.h"
+#include "../config.h"
 
 
 
@@ -16,12 +16,12 @@ Two_ints search_two_columns(AutomataDFA *a, char actual_character, char lookahea
 
 bool is_accepting_state(AutomataDFA *a, int state);
 
-void restart_automatas(AutomataDFA *a, int num_automata);
+void restart_automatas(AutomataDFA **a, int num_automata);
 
 /**
  * Driver que processa un fitxer amb múltiples autòmata DFA
  * Escriu tokens reconeguts i no reconeguts en fitxers separats
  */
-void automata_driver(AutomataDFA *automata_list, int num_automata);
+void automata_driver(AutomataDFA **automata_list, int num_automata);
 
  #endif

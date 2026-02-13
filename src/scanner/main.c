@@ -2,73 +2,81 @@
  * -----------------------------------------------------------------------------
  * main.c
  *
- * Main entry point for the C preprocessor application. This program processes
- * C source files by handling preprocessor directives, macro definitions, and
- * conditional compilation.
+ * Main entry point for the C scanner application. This program processes
+ * C source files by performing lexical analysis and tokenization using
+ * finite automata (DFA) to recognize various token categories.
  *
  * Program Flow:
  * 1. Initialize error tracking system
- * 2. Process command-line arguments (input/output files, flags)
- * 3. Initialize parser with input file and configuration
- * 4. Execute main parsing loop to process the entire input file
- * 5. Clean up resources and finalize error reporting
+ * 2. Process command-line arguments (input/output files)
+ * 3. Initialize automata for token recognition
+ * 4. Run automata driver to scan the input file and generate tokens
+ * 5. Close files and finalize error reporting
  * 6. Exit with appropriate status code based on error count
  *
- * Supported Features:
- * - Comment removal (-c flag)
- * - Directive processing (-d flag) including #include, #define, #ifdef, #ifndef
- * - Macro substitution
- * - Error tracking and reporting
+ * Token Categories Recognized:
+ * - Numbers (integers, floats)
+ * - Keywords (if, while, for, etc.)
+ * - Types (int, char, float, etc.)
+ * - Identifiers (variable/function names)
+ * - Operators (+, -, *, /, etc.)
+ * - Special characters ({, }, (, ), etc.)
+ * - String/Character literals
+ * - Non-recognized characters
  *
  * Usage:
- *     ./preprocessor <input_file> <output_file> [-c] [-d]
+ *     ./scanner <input_file> [-help]
+ *     Output file: <input_file>scn
  *     Use -help flag for detailed usage information
  *
  * Exit Codes:
- *     0 - Success (no errors encountered)
- *     1 - Failure (errors occurred during preprocessing)
+ *     0 - Success (scanning completed, may have non-critical errors)
+ *     1 - Failure (critical errors occurred during scanning)
  *
  * Team: GA
- * Contributor/s: Gorka Hernández Villalón
+ * Contributor/s:
  * -----------------------------------------------------------------------------
  */
 
 #include "./main.h"
+#include "config.h"
+#include "module_init/module_init.h"
 
 int main(int argc, char *argv[]) {
-    errors_init();
+    //errors_init();
     
-    int returned = process_arguments(argc, argv);
+    int returned = init_program(argc, argv);
 
-    if (returned == HELP_RETURN) { //Show help if requested
-        show_help();
-        return 0;
-    }
-
-    fprintf(stdout, "Input file: %s\n", status.ifile);
-    fprintf(stdout, "Output file: %s\n", status.ofile);
-    
-    // ParserState* state = init_parser(flags->ifile, flags->ofile, flags);
-    // if (!state) {
-    //     fprintf(stderr, "Error: Could not initialize parser\n");
-    //     free(flags);
-    //     return 1;
+    // if (returned == HELP_RETURN) { //Show help if requested
+    //     show_help();
+    //     return 0;
     // }
 
-    fprintf(stdout, "Preprocessing...\n");
-    // Parse the input file until EOF
-    // We use an empty array (only NULL) so parse_until will return -1 when it reaches actual EOF
-    const char* no_stop[] = {NULL};  // Empty array means parse until actual EOF
-    int result = parse_until(no_stop, true);
-
-    fprintf(stdout, "Preprocessing completed!\n");
-    fprintf(stdout, "Output written to: %s\n", status.ofile);
-
-    errors_finalize();
-
-    if (errors_count() > 0) {
+    if (returned != CORRECT_RETURN) {
+        fprintf(stderr, "Error: Failed to initialize scanner\n");
         return 1;
     }
+
+    // Initialize automata for token recognition
+    AutomataList automata_list;
+    init_automata(&automata_list);
+
+    // Run automata driver to scan input and generate tokens
+    automata_driver(automata_list.automatas, automata_list.num_automata);
+
+    // Close files
+    if (status.ifile) {
+        fclose(status.ifile);
+    }
+    if (status.ofile) {
+        fclose(status.ofile);
+    }
+
+    // errors_finalize();
+
+    // if (errors_count() > 0) {
+    //     return 1;
+    // }
 
     return 0;
 }

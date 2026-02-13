@@ -1,35 +1,44 @@
 # -----------------------------------------------------------------------------
-# src/CMakeLists.txt
+# src/scanner/CMakeLists.txt
 # 
-# This file includes each module directory (sub-library) so they can be
-# built individually with their own CMakeLists.txt.
-# Each module (e.g., module_args, module_2) is compiled as a static library to allow
-# individual development, compilation, and unit testing in isolation.
+# This file configures the scanner executable and its module libraries.
+# The scanner performs lexical analysis on C source files using DFA automata.
 #
-# By organizing code this way:
-# - Each developer works on a separate module with minimal merge conflicts.
-# - Modules can be independently tested with their own test_<module>.c files.
-# - A main program (optional) can link all modules together for integration.
+# Structure:
+# - Scanner executable: links main.c, config.c, count.c with module libraries
+# - Module libraries: module_init, module_error, module_automata
 #
-# This CMake file only declares the libraries and their internal includes.
-# The main executable and test targets are defined in the top-level and test
-# CMakeLists.txt files respectively.
+# The scanner reads C source files and produces tokenized output.
+# Each token is classified by category (number, identifier, keyword, etc.)
+# using finite automata DFAs.
 # -----------------------------------------------------------------------------
 
-message(STATUS "(${PROJECT_NAME}) Adding all module subdirectories in src/...")
-message(STATUS " - (${PROJECT_NAME}) (src) Configuring source modules and utils...")
+message(STATUS "(${PROJECT_NAME}) Configuring scanner module...")
 
-# Add utils library from the top-level src folder //Idk if we have to add this
-# add_library(config STATIC config.c)
-# target_include_directories(config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# message(STATUS "   - (${PROJECT_NAME}) Added config library")
-
-# Add modules subdirectories
+# Add scanner module subdirectories
 add_subdirectory(module_init)
 add_subdirectory(module_error)
 add_subdirectory(module_automata)
 
+message(STATUS "   - (${PROJECT_NAME}) Added scanner module subdirectories")
 
-message(STATUS "   - (${PROJECT_NAME}) Added modules subdirectories")
+# Create the scanner executable
+add_executable(scanner
+    main.c
+    config.c
+    count.c
+)
 
-message(STATUS "(${PROJECT_NAME}) Finished including module subdirectories.")
+# Link scanner with module libraries
+target_link_libraries(scanner PRIVATE
+    module_init
+    module_error
+    module_automata
+)
+
+# Include directories for scanner
+target_include_directories(scanner PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+message(STATUS "(${PROJECT_NAME}) Scanner executable configured: main scanner binaries linked with modules")

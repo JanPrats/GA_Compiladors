@@ -51,10 +51,10 @@ bool is_accepting_state(AutomataDFA *a, int state){
     return false;
 }
 
-void restart_automatas(AutomataDFA *a, int num_automata){
+void restart_automatas(AutomataDFA **a, int num_automata){
     for (int i = 0; i < num_automata; i++){ // Reinicialitzar tots els autòmata per començar un nou token
-        a[i].current_state = a[i].start_state;
-        a[i].dont_look_anymore = false;
+        a[i]->current_state = a[i]->start_state;
+        a[i]->dont_look_anymore = false;
     }
 }
 
@@ -91,14 +91,19 @@ static int update_automata(AutomataDFA *a, char c, char lookahead) {
  * Driver que processa un fitxer amb múltiples autòmata DFA
  * Escriu tokens reconeguts i no reconeguts en fitxers separats
  */
-void automata_driver(AutomataDFA *automata_list, int num_automata){
+void automata_driver(AutomataDFA **automata_list, int num_automata){
+    
     char c = fgetc(status.ifile); // Caràcter llegit del fitxer
     if (c == EOF){
-        c = EOF; //Substitute this with the error necesary {Use Error e = ERR_EMPTY_FILE; from error enum}
+        return; //ficar error
     }
+    
     char lookahead;
     BufferAuto buffer;
-    BufferAuto buffer_nonrecognized; 
+    BufferAuto buffer_nonrecognized;
+    buffer_clear(&buffer);
+    buffer_clear(&buffer_nonrecognized);
+    
     Category nonrecognized_category = CAT_NONRECOGNIZED;
 
     while ((lookahead = fgetc(status.ifile)) != EOF){ //Anar llegint el fitxer
@@ -107,19 +112,19 @@ void automata_driver(AutomataDFA *automata_list, int num_automata){
 
         for (int i = 0; i < num_automata; i++){// Iterar sobre tots els autòmata
 
-            if (!automata_list[i].dont_look_anymore){ // Només processar actius
-                int decision = update_automata(&automata_list[i], c, lookahead);
+            if (!automata_list[i]->dont_look_anymore){ // Només processar actius
+                int decision = update_automata(automata_list[i], c, lookahead);
 
                 if (decision == ACCEPT_TOKEN){ // L'autòmata ha arribat a un estat d'acceptació 
                     if(buffer_nonrecognized.len == 0){
                         write_token_to_file_and_list(&buffer_nonrecognized, nonrecognized_category);
                     }  
-                    write_token_to_file_and_list(&buffer, automata_list[i].type);
+                    write_token_to_file_and_list(&buffer, automata_list[i]->type);
                     accepted = true; // Marcar que s'ha acceptat un token
                     break;           // Reiniciarem tots els autòmata després
                     
                 } else if (decision == STOP_AUTOMATA){ // L'autòmata ha rebutjat, marcar com a "no mirar més"
-                    automata_list[i].dont_look_anymore = true; 
+                    automata_list[i]->dont_look_anymore = true; 
                 }
                 // value == -1 → continua processant, no fem res
             }
@@ -132,7 +137,7 @@ void automata_driver(AutomataDFA *automata_list, int num_automata){
         else {
             bool all_done = true;
             for (int i = 0; i < num_automata; i++){ // Comprovar si tots els autòmata han rebutjat el caràcter
-                if (!automata_list[i].dont_look_anymore){
+                if (!automata_list[i]->dont_look_anymore){
                     all_done = false;
                     break;
                 }
@@ -146,8 +151,9 @@ void automata_driver(AutomataDFA *automata_list, int num_automata){
         }
         c = lookahead; //lookahead becomes the actual char
     }
+  
     if(c != EOF && status.all_tokens.count == 0){ //Case of file with only one character, we do not handle this case
-        fprintf(status.ofile, "<%s, %s>\n",
-                c, "NONRECOGNIZED");
+        fprintf(status.ofile, "<%c, %s>\n",
+                c, category_to_string(CAT_NONRECOGNIZED));
     }
 }

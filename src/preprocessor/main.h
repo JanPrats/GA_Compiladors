@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "./utils_files.h"
 #include "./module_args/module_args.h"
-#include "./module_2/module_2.h"
 #include "./module_comments_remove/module_comments_remove.h"
 #include "./module_define/module_define.h"
 #include "./module_errors/module_errors.h"

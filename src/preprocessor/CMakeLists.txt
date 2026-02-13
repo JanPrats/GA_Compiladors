@@ -26,7 +26,6 @@ message(STATUS "   - (${PROJECT_NAME}) Added utils library")
 
 # Add modules subdirectories
 add_subdirectory(module_args)
-add_subdirectory(module_2)
 add_subdirectory(module_comments_remove)
 add_subdirectory(module_define)
 add_subdirectory(module_errors)

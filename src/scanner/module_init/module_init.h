@@ -16,6 +16,6 @@
 //   - automata_literal_create()        
 //   - automata_nonrecognized_create()  
 
-void init_status_scn();
+void init_status_scn(void);
 void init_automata();
 #endif // MODULE_INIT_H

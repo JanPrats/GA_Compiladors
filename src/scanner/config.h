@@ -201,6 +201,17 @@ typedef struct AutomataDFA {
     Category type;                                  // CAT_KEYWORD (it is an enum, so include config.h to have the struct)
     bool dont_look_anymore;                         // If we have already finished the execution and we do not want to keep looking
 } AutomataDFA;
+
+
+typedef struct AutomataList {
+    AutomataDFA* automatas[MAX_AUTOMATAS];  
+    int num_automata;
+} AutomataList;
+
+extern AutomataDFA* ALL_AUTOMATA[];
+extern int NUM_AUTOMATA;
+
+
 /*
 
 //DFA IF
@@ -214,12 +225,6 @@ Category:           CAT_KEYWORD
 
 */
 
-//Probably this single stuct is not used
-typedef struct AutomataList {
-    AutomataDFA all_automata[MAX_AUTOMATAS];
-    int count;
-} AutomataList;
-//////////////////////
 
 //Not sure if we will need these 2
 typedef struct ErrorReport {

@@ -20,8 +20,7 @@
 
 #include <assert.h>
 
-#include "../src/utils_files.h"
 
-extern FILE *ofile; // file handler to send the module's output (to a file or stdout)
+//extern FILE *ofile; // file handler to send the module's output (to a file or stdout)
 
 #endif // TEST_MODULE_H
