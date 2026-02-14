@@ -146,8 +146,8 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
             }
             
             if (all_done){
-                // fprintf(unrecognized_file, "<%c, %d>\n", c, CAT_NONRECOGNIZED); // Escriure el caràcter com a no reconegut en el fitxer corresponent
                 buffer_move_append(&buffer_nonrecognized, &buffer);
+                report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
                 restart_automatas(automata_list, num_automata);
             }
         }
@@ -157,5 +157,6 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
     if(c != EOF && status.all_tokens.count == 0){ //Case of file with only one character, we do not handle this case
         fprintf(status.ofile, "<%c, %s>\n",
                 c, category_to_string(CAT_NONRECOGNIZED));
+        report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
     }
 }

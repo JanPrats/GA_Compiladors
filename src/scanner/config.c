@@ -47,6 +47,8 @@ void buffer_add(BufferAuto *buffer, char c) {
     if (buffer->len < MAX_TOKEN_NAME - 1) {
         buffer->lexeme[buffer->len++] = c;
         buffer->lexeme[buffer->len] = '\0';
+    } else {
+        report_warning("Token too long, character discarded", status.line);
     }
 }
 

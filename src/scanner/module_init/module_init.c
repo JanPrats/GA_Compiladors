@@ -31,6 +31,11 @@ int init_program(int argc, char* argv[]){
             report_warning(msg, 0);
         }
     }
+    if (status.ifile_name[0] == '\0') {
+        report_error_typed(ERR_INVALID_ARGUMENT, 0);
+        return ERROR_RETURN;
+    }
+
     int status_result = init_status_scn();
     if (status_result != CORRECT_RETURN) {
         return ERROR_RETURN;
