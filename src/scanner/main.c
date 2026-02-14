@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     error_init();
     
     int returned = init_program(argc, argv);
+    
 
     if (returned == HELP_RETURN) {
         return 0;

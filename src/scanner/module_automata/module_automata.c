@@ -5,10 +5,10 @@
 
 int write_token_to_file_and_list(BufferAuto *buffer, Category cat){
     if (status.oform == RELEASE_M) {
-        fprintf(status.ofile, "<%s, %s>\n", buffer->lexeme, category_to_string(cat));
+        fprintf(status.ofile, "<%s, %s> ", buffer->lexeme, category_to_string(cat));
     }
     if (status.oform == DEBUG_M) { //needs to be changed
-        fprintf(status.ofile, "<%s, %s>\n", buffer->lexeme, category_to_string(cat));
+        fprintf(status.ofile, "<%s, %s> ", buffer->lexeme, category_to_string(cat));
     }
     add_token_to_list(buffer->lexeme, cat);
 
@@ -28,7 +28,7 @@ int search_column(AutomataDFA *a, char actual_character){
 
 Two_ints search_two_columns(AutomataDFA *a, char actual_character, char lookahead){
     Two_ints result = { -1, -1 };   // default: not found
-    for (int i = 0; i < MAX_ALPHABET_SIZE && a->alphabet[i].character != '\0'; i++){
+    for (int i = 0; i < MAX_ALPHABET_SIZE && a->alphabet[i].character != EOF; i++){
         char symbol = a->alphabet[i].character;
 
         if (symbol == actual_character)
@@ -110,6 +110,24 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
 
     while ((lookahead = fgetc(status.ifile)) != EOF){ //Anar llegint el fitxer
         bool accepted = false; // Indica si algun autòmata ha acceptat aquest token
+        ActionSkip action = skip_nonchars(c, lookahead);
+        c = action.c;
+        lookahead = action.lookahead;
+        if (action.to_do == EOL_RETURN){
+            if (status.oform == DEBUG_M){
+                fprintf(status.ofile, "%d", status.line);
+                fprintf(status.ofile, CARRIAGE_RETURN);
+            }
+            if(buffer_nonrecognized.len != 0){
+                write_token_to_file_and_list(&buffer_nonrecognized, nonrecognized_category);
+                buffer_clear(&buffer_nonrecognized);
+            }
+            fprintf(status.ofile, "\n");
+        }
+        if(action.to_do == EOF_RETURN){
+            break;
+        }
+
         buffer_add(&buffer, c);
 
         for (int i = 0; i < num_automata; i++){// Iterar sobre tots els autòmata
@@ -118,8 +136,9 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
                 int decision = update_automata(automata_list[i], c, lookahead);
 
                 if (decision == ACCEPT_TOKEN){ // L'autòmata ha arribat a un estat d'acceptació 
-                    if(buffer_nonrecognized.len == 0){
+                    if(buffer_nonrecognized.len != 0){
                         write_token_to_file_and_list(&buffer_nonrecognized, nonrecognized_category);
+                        buffer_clear(&buffer_nonrecognized);
                     }  
                     write_token_to_file_and_list(&buffer, automata_list[i]->type);
                     accepted = true; // Marcar que s'ha acceptat un token
@@ -144,18 +163,18 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
                     break;
                 }
             }
-            
+
             if (all_done){
                 buffer_move_append(&buffer_nonrecognized, &buffer);
-                report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
+                // report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
                 restart_automatas(automata_list, num_automata);
             }
         }
         c = lookahead; //lookahead becomes the actual char
     }
-  
+    
     if(c != EOF && status.all_tokens.count == 0){ //Case of file with only one character, we do not handle this case
-        fprintf(status.ofile, "<%c, %s>\n",
+        fprintf(status.ofile, "<%c, %s> ",
                 c, category_to_string(CAT_NONRECOGNIZED));
         report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
     }

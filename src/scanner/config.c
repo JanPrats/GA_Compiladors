@@ -70,6 +70,36 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
     buffer_clear(src);
 }
 
+ActionSkip skip_nonchars(char c, char lookahead){
+    ActionSkip action = {0};  // Initialize all members to 0
+    bool saw_newline = false;
+    
+    while (c == SPACE_CHAR || c == TAB_CHAR || c == END_OF_LINE || c == CARRIAGE_RETURN) {
+        if (c == END_OF_LINE || c == CARRIAGE_RETURN) {
+            status.line++;
+            saw_newline = true;  // Track that we saw a newline
+        }
+        c = lookahead;
+        if (lookahead != EOF) {
+            lookahead = fgetc(status.ifile);
+        }
+    }
+    
+    if (c == EOF) {
+        action.c = EOF;
+        action.lookahead = EOF;
+        action.to_do = EOF_RETURN;
+    } else {
+        action.c = c;
+        action.lookahead = lookahead;
+        if (saw_newline){
+            action.to_do = action.to_do = EOL_RETURN;
+        } else {
+            action.to_do = action.to_do = CORRECT_RETURN;
+        }
+    }
+    return action;
+}
 
 
 

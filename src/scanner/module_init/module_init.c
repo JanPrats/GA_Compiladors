@@ -37,6 +37,7 @@ int init_program(int argc, char* argv[]){
     }
 
     int status_result = init_status_scn();
+
     if (status_result != CORRECT_RETURN) {
         return ERROR_RETURN;
     }
@@ -45,8 +46,15 @@ int init_program(int argc, char* argv[]){
 
 int init_status_scn(){
     status.oform = RELEASE_M;
-    status.debug = DEBUG_F;
-    status.countconfig = COUNTCONFIG_F;
+    
+    if (status.oform == RELEASE_M){
+        status.countconfig = OFF;
+        status.debug = OFF;
+    }
+    else{
+        status.debug = DEBUG_F;
+        status.countconfig = COUNTCONFIG_F;
+    }
 
     snprintf(status.ofile_name, MAX_FILENAME, "%sscn", status.ifile_name);
 

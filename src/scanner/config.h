@@ -21,6 +21,12 @@
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
 
+//Language
+#define SPACE_CHAR ' '
+#define TAB_CHAR '\t'
+#define END_OF_LINE '\n'
+#define CARRIAGE_RETURN '\r'
+
 /* DEBUG_ FLAG      [For errors]
 ON: (all) messages are written to the output file
 OFF: (all) messages are written to the stdout
@@ -37,7 +43,7 @@ DBGCOUNT: messages should be sent to the stdout file.
 
 /////"String" lengths
 #define MAX_FILENAME 512        // Max File length (in bits I think) for compiler variables
-#define MAX_TOKEN_NAME 256      // Max Key Length
+#define MAX_TOKEN_NAME 4096      // Max Key Length
 #define MAX_TOKENS 1024         // Max number of macros
 #define MAX_LINE_LENGTH 4096    // Max length of a whole line
 // #define MAX_MACRO_VALUE 1024    // MAX Value Length
@@ -58,12 +64,17 @@ DBGCOUNT: messages should be sent to the stdout file.
 #define ACCEPT_TOKEN 2
 #define STOP_AUTOMATA 3
 
+#define EOL_RETURN 4
+#define EOF_RETURN 5
+
 
 //Other
 #define ON 1        //FOR DEBUG_F
 #define OFF 0       //FOR DEBUG_F
 #define OUT 1       //FOR COUNTOUT_F
 #define DBGCOUNT 0  //FOR COUNTOUT_F
+
+
 
 /////
 
@@ -254,6 +265,12 @@ typedef struct BufferAuto {
     int len;
 } BufferAuto;
 
+typedef struct ActionSkip {
+    int c;
+    int lookahead;
+    int to_do;
+} ActionSkip;
+
 extern Status status;   // declaration, NOT definition
 
 // Path to the logs directory: put your full path, the directory has to exist
@@ -274,4 +291,7 @@ void buffer_add(BufferAuto *buffer, char c);
 void buffer_append(BufferAuto *dest, const BufferAuto *src);
 
 void buffer_move_append(BufferAuto *dest, BufferAuto *src);
+
+ActionSkip skip_nonchars(char c, char lookahead);
+
 #endif // CONFIG_FILES_H

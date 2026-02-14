@@ -366,13 +366,13 @@ AutomataDFA keyword_automata = {
 };
 
 AutomataDFA* ALL_AUTOMATA[] = {
-    &identifier_automata,
     &literal_automata,
     &operator_automata,
     &specials_automata,
     &number_automata,
     &type_automata,
-    &keyword_automata
+    &keyword_automata,
+    &identifier_automata
 };
 
 int NUM_AUTOMATA = sizeof(ALL_AUTOMATA) / sizeof(ALL_AUTOMATA[0]);

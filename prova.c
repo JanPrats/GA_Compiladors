@@ -21,10 +21,13 @@ int main() {
     while(x < 100) {
         x = x + 1;
     }
-    x += 5;
+    x += 5; 
     y /= 2.0;
     int z = x % 3;
     printf("%s %c %d\n", str, c, x);
-
+    # # # # #
+    @
+    汉字/漢字
+    
     return 0;
 }
