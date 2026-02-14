@@ -60,8 +60,9 @@ void report_error_token(const Token* token, int line) {
     snprintf(msg, sizeof(msg), "Non-recognized token '%s'", token->lexeme);
     store_entry(msg, line, SEVERITY_ERROR, ERR_TOKEN_NOT_RECOGNIZED);
 }
-void report_error_typed(Error error_type, const char* message, int line) {
-    store_entry(message, line, SEVERITY_ERROR, error_type);
+void report_error_typed(Error error_type, int line) {
+    const char* msg = error_type_to_string(error_type);
+    store_entry(msg, line, SEVERITY_ERROR, error_type);
 }
 int error_count(void) {
     return total_errors;
@@ -100,6 +101,7 @@ const char* error_type_to_string(Error err) {
         case ERR_TOKEN_TOO_LONG:      return "TOKEN_TOO_LONG";
         case ERR_UNTERMINATED_LITERAL: return "UNTERMINATED_LITERAL";
         case ERR_MAX_TOKENS_EXCEEDED: return "MAX_TOKENS_EXCEEDED";
+        case ERR_EMPTY_FILE:          return "EMPTY_FILE";
         default:                      return "UNKNOWN_ERROR";
     }
 }

@@ -19,7 +19,7 @@ void error_init(void);
 void report_error(const char* message, int line);
 void report_warning(const char* message, int line);
 void report_error_token(const Token* token, int line);
-void report_error_typed(Error error_type, const char* message, int line);
+void report_error_typed(Error error_type, int line);
 int error_count(void);
 int warning_count(void);
 void error_finalize(void);

@@ -43,17 +43,17 @@
 #include "module_init/module_init.h"
 
 int main(int argc, char *argv[]) {
-    //errors_init();
+    error_init();
     
     int returned = init_program(argc, argv);
 
-    // if (returned == HELP_RETURN) { //Show help if requested
-    //     show_help();
-    //     return 0;
-    // }
+    if (returned == HELP_RETURN) {
+        return 0;
+    }
 
     if (returned != CORRECT_RETURN) {
-        fprintf(stderr, "Error: Failed to initialize scanner\n");
+        report_error_typed(ERR_INVALID_ARGUMENT, 0);
+        error_finalize();
         return 1;
     }
 
@@ -64,19 +64,18 @@ int main(int argc, char *argv[]) {
     // Run automata driver to scan input and generate tokens
     automata_driver(automata_list.automatas, automata_list.num_automata);
 
+    // Finalize errors BEFORE closing files (error_finalize may write to ofile in debug mode)
+    error_finalize();
+
     // Close files
     if (status.ifile) {
         fclose(status.ifile);
+        status.ifile = NULL;
     }
     if (status.ofile) {
         fclose(status.ofile);
+        status.ofile = NULL;
     }
 
-    // errors_finalize();
-
-    // if (errors_count() > 0) {
-    //     return 1;
-    // }
-
-    return 0;
+    return (error_count() > 0) ? 1 : 0;
 }

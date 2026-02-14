@@ -10,7 +10,6 @@
 #include "module_automata/module_automata.h"
 #include "module_error/module_error.h"
 #include "module_init/module_init.h"
-const char* category_to_string(Category cat);
 // Jan por hacer: Single token scan: runs all automata on the input starting at input[*idx].
 // Dispatches to appropriate DFA(s) based on current character.
 // Returns the recognized token and advances *idx past consumed characters.

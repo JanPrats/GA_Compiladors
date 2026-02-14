@@ -1,6 +1,7 @@
 #include "../config.h"
+#include "../module_error/module_error.h"
 
-void init_status_scn(void);
+int init_status_scn(void);
 
 void print_arguments(int argc, char *argv[]) {
     fprintf(status.ofile, "Arguments received (%d):\n", argc);
@@ -27,14 +28,17 @@ int init_program(int argc, char* argv[]){
         else {
             char msg[256];
             snprintf(msg, sizeof(msg), "Unknown flag '%s' (ignored). Use -help for info.", argv[i]);
-            //ERROR TO BE DONE
+            report_warning(msg, 0);
         }
     }
-    init_status_scn();
+    int status_result = init_status_scn();
+    if (status_result != CORRECT_RETURN) {
+        return ERROR_RETURN;
+    }
     return CORRECT_RETURN;
 }
 
-void init_status_scn(){
+int init_status_scn(){
     status.oform = RELEASE_M;
     status.debug = DEBUG_F;
     status.countconfig = COUNTCONFIG_F;
@@ -47,13 +51,16 @@ void init_status_scn(){
     status.ifile = fopen(status.ifile_name, "r");
     if (!status.ifile) {
         fprintf(stderr, "CRITICAL ERROR: Cannot open input file '%s'\n", status.ifile_name);
-        //add error
+        report_error_typed(ERR_FILE_NOT_FOUND, 0);
+        return ERROR_RETURN;
     }
     status.ofile = fopen(status.ofile_name, "w");
     if (!status.ofile) {
         fprintf(stderr, "CRITICAL ERROR: Cannot create output file '%s'\n", status.ofile_name);
-        fclose(status.ifile);
-        //add error
+        if (status.ifile) fclose(status.ifile);
+        status.ifile = NULL;
+        report_error_typed(ERR_FILE_NOT_FOUND, 0);
+        return ERROR_RETURN;
     }
 
     if(DEBUG_F == ON){
@@ -63,6 +70,7 @@ void init_status_scn(){
     }
 
     status.line = 0;
+    return CORRECT_RETURN;
 }
 
 void init_automata(AutomataList* automata_list){

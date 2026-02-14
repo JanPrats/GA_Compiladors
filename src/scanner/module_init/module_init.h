@@ -16,6 +16,8 @@
 //   - automata_literal_create()        
 //   - automata_nonrecognized_create()  
 
-void init_status_scn(void);
-void init_automata();
+int init_status_scn(void);
+void init_automata(AutomataList* automata_list);
+int init_program(int argc, char* argv[]);
+void show_help(void);
 #endif // MODULE_INIT_H

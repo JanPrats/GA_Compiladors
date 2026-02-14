@@ -21,8 +21,10 @@ const char* category_to_string(Category cat) {
 
 void add_token_to_list(char* lexeme, Category cat) {
 
-    if (status.all_tokens.count >= MAX_TOKENS)
-        return; // prevent overflow
+    if (status.all_tokens.count >= MAX_TOKENS) {
+        report_warning("Maximum token count reached, token discarded", status.line);
+        return;
+    }
 
     Token *t = &status.all_tokens.tokens[status.all_tokens.count];
 

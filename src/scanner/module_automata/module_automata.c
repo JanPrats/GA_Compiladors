@@ -1,4 +1,5 @@
 #include "module_automata.h"
+#include "../module_error/module_error.h"
 #include <string.h>
 
 
@@ -95,7 +96,8 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
     
     char c = fgetc(status.ifile); // Caràcter llegit del fitxer
     if (c == EOF){
-        return; //ficar error
+        report_error_typed(ERR_EMPTY_FILE, 0);
+        return;
     }
     
     char lookahead;
