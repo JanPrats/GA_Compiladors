@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (returned != CORRECT_RETURN) {
-        report_error_typed(ERR_INVALID_ARGUMENT, 0);
+        report_error_typed(ERR_INVALID_ARGUMENT, 0, SCANNER_STEP);
         error_finalize();
         return 1;
     }

@@ -96,7 +96,7 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
     
     char c = fgetc(status.ifile); // Caràcter llegit del fitxer
     if (c == EOF){
-        report_error_typed(ERR_EMPTY_FILE, 0);
+        report_error_typed(ERR_EMPTY_FILE, 0, SCANNER_STEP);
         return;
     }
     
@@ -176,6 +176,6 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
     if(c != EOF && status.all_tokens.count == 0){ //Case of file with only one character, we do not handle this case
         fprintf(status.ofile, "<%c, %s> ",
                 c, category_to_string(CAT_NONRECOGNIZED));
-        report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
+        report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line, SCANNER_STEP);
     }
 }

@@ -28,11 +28,11 @@ int init_program(int argc, char* argv[]){
         else {
             char msg[256];
             snprintf(msg, sizeof(msg), "Unknown flag '%s' (ignored). Use -help for info.", argv[i]);
-            report_warning(msg, 0);
+            report_warning(msg, 0, SCANNER_STEP);
         }
     }
     if (status.ifile_name[0] == '\0') {
-        report_error_typed(ERR_INVALID_ARGUMENT, 0);
+        report_error_typed(ERR_INVALID_ARGUMENT, 0, SCANNER_STEP);
         return ERROR_RETURN;
     }
 
@@ -64,7 +64,7 @@ int init_status_scn(){
     status.ifile = fopen(status.ifile_name, "r");
     if (!status.ifile) {
         fprintf(stderr, "CRITICAL ERROR: Cannot open input file '%s'\n", status.ifile_name);
-        report_error_typed(ERR_FILE_NOT_FOUND, 0);
+        report_error_typed(ERR_FILE_NOT_FOUND, 0, SCANNER_STEP);
         return ERROR_RETURN;
     }
     status.ofile = fopen(status.ofile_name, "w");
@@ -72,7 +72,7 @@ int init_status_scn(){
         fprintf(stderr, "CRITICAL ERROR: Cannot create output file '%s'\n", status.ofile_name);
         if (status.ifile) fclose(status.ifile);
         status.ifile = NULL;
-        report_error_typed(ERR_FILE_NOT_FOUND, 0);
+        report_error_typed(ERR_FILE_NOT_FOUND, 0, SCANNER_STEP);
         return ERROR_RETURN;
     }
 

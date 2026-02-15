@@ -22,7 +22,7 @@ const char* category_to_string(Category cat) {
 void add_token_to_list(char* lexeme, Category cat) {
 
     if (status.all_tokens.count >= MAX_TOKENS) {
-        report_warning("Maximum token count reached, token discarded", status.line);
+        report_warning("Maximum token count reached, token discarded", status.line, SCANNER_STEP);
         return;
     }
 
@@ -48,7 +48,7 @@ void buffer_add(BufferAuto *buffer, char c) {
         buffer->lexeme[buffer->len++] = c;
         buffer->lexeme[buffer->len] = '\0';
     } else {
-        report_warning("Token too long, character discarded", status.line);
+        report_warning("Token too long, character discarded", status.line, SCANNER_STEP);
     }
 }
 
