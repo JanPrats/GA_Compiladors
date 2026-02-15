@@ -1,3 +1,26 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_init.h
+ *
+ * Header for the Initialization module of the Scanner.
+ * Provides function declarations for scanner setup and startup.
+ * Handles argument processing, status initialization, and automata creation.
+ *
+ * Key Functions:
+ * - init_program(): Parse arguments and validate input
+ * - init_status_scn(): Initialize scanner status structure
+ * - init_automata(): Create and initialize all DFAs
+ * - show_help(): Display usage information
+ *
+ * Automata Creation:
+ * Each automata type (numbers, keywords, identifiers, etc.) is
+ * initialized through dedicated create functions.
+ *
+ * Team: GA
+ * Contributor/s: Pol García
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef MODULE_INIT_H
 #define MODULE_INIT_H
 #include "../config.h"

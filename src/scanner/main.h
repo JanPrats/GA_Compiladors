@@ -1,3 +1,26 @@
+/*
+ * -----------------------------------------------------------------------------
+ * main.h
+ *
+ * Main header file for the Scanner module.
+ * Declares core scanning functions, includes necessary dependencies,
+ * and provides function prototypes for lexical analysis.
+ *
+ * Key Functions:
+ * - scan_token(): Primary scanning function that recognizes tokens
+ *                using finite automata matching
+ *
+ * Function Behavior:
+ * - Dispatches to appropriate DFA based on current character
+ * - Recognizes all token categories (numbers, identifiers, keywords, etc.)
+ * - Returns CAT_NONRECOGNIZED for unmatched input
+ * - Advances input position past consumed characters
+ *
+ * Team: GA
+ * Contributor/s:
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
  

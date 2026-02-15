@@ -1,3 +1,27 @@
+/*
+ * -----------------------------------------------------------------------------
+ * config.c
+ *
+ * Configuration and global state management for the Scanner module.
+ * Manages token storage, buffer operations, and token categorization.
+ *
+ * Key Responsibilities:
+ * - Global status variable initialization and management
+ * - Token list management (adding, counting, storing tokens)
+ * - Token buffer operations (creation, clearing, character addition)
+ * - Category to string conversion for output formatting
+ * - Token output to file and token list storage
+ *
+ * Token Categories Handled:
+ * - Numbers, Identifiers, Keywords, Types
+ * - Literals, Operators, Special Characters
+ * - Non-recognized tokens
+ *
+ * Team: GA
+ * Contributor/s: Pol García
+ * -----------------------------------------------------------------------------
+ */
+
 #include "./main.h"
 
 #include "config.h"

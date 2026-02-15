@@ -1,3 +1,27 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_init.c
+ *
+ * Initialization module for the Scanner.
+ * Handles program startup, argument parsing, and initial setup of
+ * scanning infrastructure including automata and status structures.
+ *
+ * Initialization Tasks:
+ * 1. Parse command-line arguments (help, error info, input file)
+ * 2. Initialize status structure for scanner operation
+ * 3. Initialize automata for token recognition
+ * 4. Configure input/output file handling
+ * 5. Set up error tracking and reporting
+ *
+ * Supported Flags:
+ * - -help: Display usage information
+ * - -errors: Display error type codes and descriptions
+ *
+ * Team: GA
+ * Contributor/s: Pol García
+ * -----------------------------------------------------------------------------
+ */
+
 #include "../config.h"
 #include "../module_error/module_error.h"
 

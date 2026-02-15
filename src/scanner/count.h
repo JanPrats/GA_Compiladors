@@ -1,3 +1,27 @@
+/*
+ * -----------------------------------------------------------------------------
+ * count.h
+ *
+ * Header for the operation counting module.
+ * Provides function declarations and macro definitions for tracking
+ * various types of operations during lexical analysis.
+ *
+ * Counting Modes:
+ * - DBGCOUNT: Operations counted to separate debug file
+ * - OUT: Operations counted to main output file
+ *
+ * Provides Macros:
+ * - COUNT_INIT(): Initialize counting system
+ * - COUNT_COMP(n): Count comparison operations
+ * - COUNT_IO(n): Count I/O operations
+ * - COUNT_GEN(n): Count general instructions
+ * - COUNT_FINALIZE(): Finalize and output statistics
+ *
+ * Team: GA
+ * Contributor/s: Marc Rodríguez
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef COUNT_H
 #define COUNT_H
 

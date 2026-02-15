@@ -1,3 +1,23 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_error.h
+ *
+ * Header for the Error module of the Scanner.
+ * Defines error tracking data structures and function declarations
+ * for reporting, managing, and finalizing errors during lexical analysis.
+ *
+ * Error Management:
+ * - ErrorEntry structure for storing individual errors/warnings
+ * - Initialize and finalize error tracking system
+ * - Report errors with categorization and context
+ * - Track error statistics (count, types)
+ * - Generate formatted error output
+ *
+ * Team: GA
+ * Contributor/s: Gorka Hernández Villalón
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef MODULE_ERROR_H
 #define MODULE_ERROR_H
 #include "../config.h"

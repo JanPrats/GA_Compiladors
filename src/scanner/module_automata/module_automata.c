@@ -1,3 +1,30 @@
+/*
+ * -----------------------------------------------------------------------------
+ * module_automata.c
+ *
+ * Automata execution engine for the Scanner module.
+ * Implements DFA (Deterministic Finite Automata) operations including:
+ * state transitions, acceptance state checking, and token recognition.
+ *
+ * Key Functions:
+ * - search_column(): Maps input character to automata alphabet column
+ * - search_two_columns(): Maps both current and lookahead characters
+ * - is_accepting_state(): Checks if a state is an accepting state
+ * - restart_automatas(): Resets all automata to initial state
+ * - write_token_to_file_and_list(): Records recognized token
+ * - automata_driver(): Main driver for scanning entire input
+ *
+ * Features:
+ * - Multi-automata support with cooperative matching
+ * - Lookahead capability for complex token recognition
+ * - Token buffering and output generation
+ * - Line tracking for error reporting
+ *
+ * Team: GA
+ * Contributor/s: Pol García, Clara Serra, Jan Prats
+ * -----------------------------------------------------------------------------
+ */
+
 #include "module_automata.h"
 #include "../module_error/module_error.h"
 #include <string.h>

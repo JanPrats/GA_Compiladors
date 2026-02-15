@@ -1,3 +1,23 @@
+/*
+ * -----------------------------------------------------------------------------
+ * config.h
+ *
+ * Configuration header for the Scanner module.
+ * Defines global constants, flags, and data structures used throughout
+ * the scanning and lexical analysis process.
+ *
+ * Key Definitions:
+ * - Debug and output format flags (DEBUG_F, OUTFORMAT_M)
+ * - Character constants and parsing limits
+ * - Maximum lengths for tokens, files, and buffers
+ * - Global status structure declaration
+ * - Token and buffer data structures
+ *
+ * Team: GA
+ * Contributor/s: Pol García
+ * -----------------------------------------------------------------------------
+ */
+
 #ifndef CONFIG_H
 #define CONFIG_H
  

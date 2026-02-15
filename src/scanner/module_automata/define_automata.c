@@ -1,3 +1,27 @@
+/*
+ * -----------------------------------------------------------------------------
+ * define_automata.c
+ *
+ * Automata definitions for the Scanner module.
+ * Defines Deterministic Finite Automata (DFAs) for each token category.
+ * Each automata specifies the alphabet, states, transitions, and acceptance
+ * conditions for recognizing specific token types.
+ *
+ * Automata Defined:
+ * - Identifier Automata: Recognizes variables and function names [a-zA-Z][a-zA-Z0-9_]*
+ * - Literal Automata: Recognizes string and character literals
+ * - Number Automata: Recognizes integers and floating-point numbers
+ * - Keyword Automata: Recognizes C keywords (if, while, for, etc.)
+ * - Type Automata: Recognizes C types (int, char, float, double, etc.)
+ * - Operator Automata: Recognizes operators (+, -, *, /, ==, etc.)
+ * - Special Character Automata: Recognizes {, }, (, ), [, ], etc.
+ * - Non-recognized Automata: Catches unrecognized character patterns
+ *
+ * Team: GA
+ * Contributor/s: Pol García, Clara Serra, Jan Prats, Andrea Salló, Gorka Hernández, Marc Rodríguez
+ * -----------------------------------------------------------------------------
+ */
+
 #include <string.h>
 #include "module_automata.h"
 

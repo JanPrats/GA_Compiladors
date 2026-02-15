@@ -1,3 +1,28 @@
+/*
+ * -----------------------------------------------------------------------------
+ * count.c
+ *
+ * Operation counting module for performance analysis and debugging.
+ * Tracks and counts different types of operations (comparisons, I/O, general)
+ * during the scanning process for performance profiling.
+ *
+ * Key Features:
+ * - Initialize and finalize counting system
+ * - Track operation counts by type and location
+ * - Support for separate debug count file or main output
+ * - Operation counting macros for conditional compilation
+ * - Counter statistics output
+ *
+ * Supported Counter Types:
+ * - COMP: Comparison operations
+ * - IO: Input/Output operations
+ * - GEN: General instructions
+ *
+ * Team: GA
+ * Contributor/s: Marc Rodríguez
+ * -----------------------------------------------------------------------------
+ */
+
 #include "count.h"
 #include "config.h"
 #include <stdio.h>
