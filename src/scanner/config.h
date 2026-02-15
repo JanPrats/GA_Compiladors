@@ -16,7 +16,7 @@
 // "Flags"
 #define DEBUG_F ON //On or OFF (defined below, I hope it is not a problem)
 #define COUNTCONFIG_F OFF //We count input/output, comparisons, instructions (in RELEASE Mode we should not count so false)
-#define OUTFORMAT_M RELEASE_M //MODE of outformat (RELEASE_M or DEBUG_M)
+#define OUTFORMAT_M RELEASE //MODE of outformat (RELEASE or DEBUG)
 #define COUNTOUT_F OUT //Explained below
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
@@ -37,8 +37,6 @@ DBGCOUNT: messages should be sent to the stdout file.
 */
 
 //These ones should not be changed (well, not usually to compile)
-#define RELEASE_M 0
-#define DEBUG_M 1
 #define HELP_F "-help"
 
 /////"String" lengths
@@ -180,7 +178,8 @@ typedef struct {
 
 	int line;           //In which line are we
 
-    // bool first_in_line; //First token of the line
+    bool first_token_in_line ; //First token of the line
+    bool line_has_tokens; //Si la línia té tokens (per no imprimir línies buides en RELEASE) 
 	// bool last_in_line;  //Last Token of the line
     // bool in_string;
     // bool type_icv;      //Know if we are after an int, char or void declaration

@@ -45,17 +45,10 @@ int init_program(int argc, char* argv[]){
 }
 
 int init_status_scn(){
-    status.oform = RELEASE_M;
+    status.oform = OUTFORMAT_M;
+    status.debug = DEBUG_F;
+    status.countconfig = COUNTCONFIG_F;
     
-    if (status.oform == RELEASE_M){
-        status.countconfig = OFF;
-        status.debug = OFF;
-    }
-    else{
-        status.debug = DEBUG_F;
-        status.countconfig = COUNTCONFIG_F;
-    }
-
     snprintf(status.ofile_name, MAX_FILENAME, "%sscn", status.ifile_name);
 
     status.ifile_name[MAX_FILENAME - 1] = '\0';
@@ -76,13 +69,15 @@ int init_status_scn(){
         return ERROR_RETURN;
     }
 
-    if(DEBUG_F == ON){
-        status.error_file = stdout;
-    }else if(DEBUG_F == OFF){
+    if (status.debug == ON) {
         status.error_file = status.ofile;
+    } else {
+        status.error_file = stdout;
     }
 
-    status.line = 0;
+    status.line = 1;
+    status.first_token_in_line = true;
+    status.line_has_tokens = false;
     return CORRECT_RETURN;
 }
 

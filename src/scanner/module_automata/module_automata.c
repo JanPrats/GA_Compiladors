@@ -4,12 +4,13 @@
 
 
 int write_token_to_file_and_list(BufferAuto *buffer, Category cat){
-    if (status.oform == RELEASE_M) {
-        fprintf(status.ofile, "<%s, %s> ", buffer->lexeme, category_to_string(cat));
+    if (status.oform == DEBUG && status.first_token_in_line) { //escriure numero linea al debug
+        fprintf(status.ofile, "%d ", status.line);
+        status.first_token_in_line = false;
     }
-    if (status.oform == DEBUG_M) { //needs to be changed
-        fprintf(status.ofile, "<%s, %s> ", buffer->lexeme, category_to_string(cat));
-    }
+    fprintf(status.ofile, "<%s, %s> ", buffer->lexeme, category_to_string(cat));
+
+    status.line_has_tokens = true;
     add_token_to_list(buffer->lexeme, cat);
 
     return CORRECT_RETURN;
@@ -113,16 +114,18 @@ void automata_driver(AutomataDFA **automata_list, int num_automata){
         ActionSkip action = skip_nonchars(c, lookahead);
         c = action.c;
         lookahead = action.lookahead;
-        if (action.to_do == EOL_RETURN){
-            if (status.oform == DEBUG_M){
-                fprintf(status.ofile, "%d", status.line);
-                fprintf(status.ofile, CARRIAGE_RETURN);
+        if (action.to_do == EOL_RETURN) {
+            if (status.line_has_tokens) {
+                if (status.oform == RELEASE) {
+                    fprintf(status.ofile, "\n");
+                } else if (status.oform == DEBUG) {
+                    fprintf(status.ofile, "\n\n"); // línia extra en DEBUG
+                }
             }
-            if(buffer_nonrecognized.len != 0){
-                write_token_to_file_and_list(&buffer_nonrecognized, nonrecognized_category);
-                buffer_clear(&buffer_nonrecognized);
-            }
-            fprintf(status.ofile, "\n");
+
+            status.first_token_in_line = true;
+            status.line_has_tokens = false;
+            status.line++;
         }
         if(action.to_do == EOF_RETURN){
             break;
