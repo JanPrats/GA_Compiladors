@@ -15,9 +15,8 @@
 //Configuration That defines how we compile (Change depending on what we want)
 // "Flags"
 #define DEBUG_F ON //On or OFF (defined below, I hope it is not a problem)
-#define COUNTCONFIG_F OFF //We count input/output, comparisons, instructions (in RELEASE Mode we should not count so false)
 #define OUTFORMAT_M RELEASE //MODE of outformat (RELEASE or DEBUG)
-#define COUNTOUT_F OUT //Explained below [OUT or DBGCOUNT]
+#define COUNTOUT_F OUT //Explained below [OUT or DBGCOUNT] (in RELEASE Mode we not count)
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
 
@@ -164,7 +163,6 @@ typedef struct CountConfig {
 typedef struct {
     Outformat oform;
 	bool debug;
-	bool countconfig;
     bool help;
 
 	char ifile_name[MAX_FILENAME]; 

@@ -47,7 +47,6 @@ int init_program(int argc, char* argv[]){
 int init_status_scn(){
     status.oform = OUTFORMAT_M;
     status.debug = DEBUG_F;
-    status.countconfig = COUNTCONFIG_F;
     
     snprintf(status.ofile_name, MAX_FILENAME, "%sscn", status.ifile_name);
 
