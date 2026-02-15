@@ -2,7 +2,6 @@
  * -----------------------------------------------------------------------------
  * count.h
  *
- * Header for the operation counting module.
  * Provides function declarations and macro definitions for tracking
  * various types of operations during lexical analysis.
  *

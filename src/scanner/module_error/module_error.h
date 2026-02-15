@@ -2,7 +2,6 @@
  * -----------------------------------------------------------------------------
  * module_error.h
  *
- * Header for the Error module of the Scanner.
  * Defines error tracking data structures and function declarations
  * for reporting, managing, and finalizing errors during lexical analysis.
  *

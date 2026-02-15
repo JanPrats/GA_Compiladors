@@ -2,7 +2,6 @@
  * -----------------------------------------------------------------------------
  * module_automata.h
  *
- * Header for the Automata module of the Scanner.
  * Defines function declarations for DFA operations and token processing.
  * Provides interfaces for automata execution and token recognition.
  *

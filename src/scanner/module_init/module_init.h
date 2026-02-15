@@ -2,7 +2,6 @@
  * -----------------------------------------------------------------------------
  * module_init.h
  *
- * Header for the Initialization module of the Scanner.
  * Provides function declarations for scanner setup and startup.
  * Handles argument processing, status initialization, and automata creation.
  *
