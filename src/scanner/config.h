@@ -17,7 +17,7 @@
 #define DEBUG_F ON //On or OFF (defined below, I hope it is not a problem)
 #define COUNTCONFIG_F OFF //We count input/output, comparisons, instructions (in RELEASE Mode we should not count so false)
 #define OUTFORMAT_M RELEASE //MODE of outformat (RELEASE or DEBUG)
-#define COUNTOUT_F OUT //Explained below
+#define COUNTOUT_F OUT //Explained below [OUT or DBGCOUNT]
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
 
