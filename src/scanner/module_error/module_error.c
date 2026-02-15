@@ -84,6 +84,27 @@ void error_finalize(void) {
         fprintf(status.error_file, "---\n");
     }
 }
+void print_all_errors(void) {
+    fprintf(stderr, "\n--- Error Type Catalog ---\n");
+    fprintf(stderr, "%-6s  %-30s  %s\n", "Code", "Enum", "String");
+    fprintf(stderr, "%-6s  %-30s  %s\n", "----", "----", "------");
+    for (int i = ERR_NONE; i <= ERR_EMPTY_FILE; i++) {
+        const char* name;
+        switch (i) {
+            case ERR_NONE:                 name = "ERR_NONE"; break;
+            case ERR_INVALID_ARGUMENT:     name = "ERR_INVALID_ARGUMENT"; break;
+            case ERR_FILE_NOT_FOUND:       name = "ERR_FILE_NOT_FOUND"; break;
+            case ERR_TOKEN_NOT_RECOGNIZED:  name = "ERR_TOKEN_NOT_RECOGNIZED"; break;
+            case ERR_TOKEN_TOO_LONG:       name = "ERR_TOKEN_TOO_LONG"; break;
+            case ERR_UNTERMINATED_LITERAL:  name = "ERR_UNTERMINATED_LITERAL"; break;
+            case ERR_MAX_TOKENS_EXCEEDED:  name = "ERR_MAX_TOKENS_EXCEEDED"; break;
+            case ERR_EMPTY_FILE:           name = "ERR_EMPTY_FILE"; break;
+            default:                       name = "UNKNOWN"; break;
+        }
+        fprintf(stderr, "%-6d  %-30s  %s\n", i, name, error_type_to_string((Error)i));
+    }
+    fprintf(stderr, "---\n\n");
+}
 const char* step_to_string(Step step) {
     switch (step) {
         case SCANNER_STEP:  return "SCANNER";

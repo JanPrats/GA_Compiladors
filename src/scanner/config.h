@@ -37,6 +37,7 @@ DBGCOUNT: messages should be sent to the stdout file.
 
 //These ones should not be changed (well, not usually to compile)
 #define HELP_F "-help"
+#define ERRORS_F "-errors"
 
 /////"String" lengths
 #define MAX_FILENAME 512        // Max File length (in bits I think) for compiler variables

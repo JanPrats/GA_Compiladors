@@ -13,7 +13,8 @@ void print_arguments(int argc, char *argv[]) {
 
 void show_help(void) { // not finished
     printf("Flags you can use:\n");
-    printf("  -help    Display this help message\n\n");
+    printf("  -help    Display this help message\n");
+    printf("  -errors  Display all error types and their codes\n\n");
 }
 
 
@@ -21,6 +22,9 @@ int init_program(int argc, char* argv[]){
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], HELP_F) == 0) { //If  we want to show the help manpage
             status.help = true;    // Global Variable for showing help and only showing help, no preprocessing
+            return HELP_RETURN;
+        } else if (strcmp(argv[i], ERRORS_F) == 0) {
+            print_all_errors();
             return HELP_RETURN;
         } else if (argv[i][0] != '-') {
             strncpy(status.ifile_name, argv[i], MAX_FILENAME - 1);

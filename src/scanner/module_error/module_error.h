@@ -26,4 +26,5 @@ int warning_count(void);
 void error_finalize(void);
 const char* error_type_to_string(Error err);
 const char* step_to_string(Step step);
+void print_all_errors(void);
 #endif // MODULE_ERROR_H
