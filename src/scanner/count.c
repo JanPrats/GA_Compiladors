@@ -16,6 +16,8 @@ static bool count_initialized = false;
  * @param countout_flag Where to send count output (OUT=1 or DBGCOUNT=0)
  */
 void count_init(const char* ifile_name, bool countout_flag) {
+    if (status.oform != DEBUG) return;
+
     if (count_initialized) {
         fprintf(stderr, "[COUNT WARNING] count_init called twice, skipping re-initialization\n");
         return;
@@ -92,6 +94,7 @@ void count_increment(const char* func_name, int line, int amount, const char* co
  * Finalize the counting system and print summary
  */
 void count_finalize(void) {
+    if (status.oform != DEBUG) return;
     
     FILE* out = global_count_config.countifle ? global_count_config.countifle : stdout;
     

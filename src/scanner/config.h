@@ -93,8 +93,7 @@ typedef enum{
 //Depending on this we print in a format or in another in the outputfile
 typedef enum{
     RELEASE,    // <lexeme, category> <lexeme, category> \n<lexeme, category> <lexeme, category> <lexeme, category>(if there is a \n in the file for now, maybe later it changes); NO EMPTY LINES
-    DEBUG       // same as RELEASE but: empty line after every token line (\n\n for each \n i think); an line number before each non-empty line i.e 1 <lexeme, cat> <lexeme, cat> \n \n 3 <lexeme, cat> <lexeme, cat> (or 2 and not 3 not sure)
-                // The debugging messages should be written at the output file. So the messages are related with the tokens.
+    DEBUG       // same as RELEASE but: empty line after every token line (\n\n for each \n i think); an line number before each non-empty line i.e 1 <lexeme, cat> <lexeme, cat> \n \n 3 <lexeme, cat> <lexeme, cat> (or 2 and not 3 not sure)             // The debugging messages should be written at the output file. So the messages are related with the tokens.
 } Outformat;    // More modes can be added (and I think if DEBUG_F is true then outformat should be DEBUG)
 // IF FORMAT == RELEASE ==> COUNTFIG = false
 // IF FORMAT == DEBUG ==> COUNTFIG = true/false (depending on what we want, but usually true)

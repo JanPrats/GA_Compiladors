@@ -56,13 +56,11 @@ int init_status_scn(){
 
     status.ifile = fopen(status.ifile_name, "r");
     if (!status.ifile) {
-        fprintf(stderr, "CRITICAL ERROR: Cannot open input file '%s'\n", status.ifile_name);
         report_error_typed(ERR_FILE_NOT_FOUND, 0, SCANNER_STEP);
         return ERROR_RETURN;
     }
     status.ofile = fopen(status.ofile_name, "w");
     if (!status.ofile) {
-        fprintf(stderr, "CRITICAL ERROR: Cannot create output file '%s'\n", status.ofile_name);
         if (status.ifile) fclose(status.ifile);
         status.ifile = NULL;
         report_error_typed(ERR_FILE_NOT_FOUND, 0, SCANNER_STEP);

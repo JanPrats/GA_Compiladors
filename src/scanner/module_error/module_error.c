@@ -29,13 +29,6 @@ void error_init(void) {
     memset(error_list, 0, sizeof(error_list));
 }
 static void store_entry(const char* message, int line, Severity severity, Error error_type, Step step) {
-    const char* prefix = (severity == SEVERITY_ERROR) ? "ERROR" : "WARNING";
-    const char* step_str = step_to_string(step);
-    const char* filename = (status.ifile_name[0] != '\0') ? status.ifile_name : "<unknown>";
-    fprintf(stderr, "[%s] %s: %s:%d: %s\n", step_str, prefix, filename, line, message);
-    if (status.debug && status.ofile) {
-        fprintf(status.ofile, "[%s] %s: %s:%d: %s\n", step_str, prefix, filename, line, message);
-    }
     if (entry_count < MAX_ERRORS) {
         strncpy(error_list[entry_count].message, message, MAX_LINE_LENGTH - 1);
         error_list[entry_count].message[MAX_LINE_LENGTH - 1] = '\0';
@@ -49,6 +42,12 @@ static void store_entry(const char* message, int line, Severity severity, Error 
         total_errors++;
     } else {
         total_warnings++;
+    }
+    if(status.oform == DEBUG){
+        const char* prefix = (severity == SEVERITY_ERROR) ? "ERROR" : "WARNING";
+        const char* step_str = step_to_string(step);
+        const char* filename = (status.ifile_name[0] != '\0') ? status.ifile_name : "<unknown>";
+        fprintf(status.error_file, "[%s] %s: %s:%d: %s\n", step_str, prefix, filename, line, message);
     }
 }
 void report_error(const char* message, int line, Step step) {
@@ -73,25 +72,16 @@ int warning_count(void) {
     return total_warnings;
 }
 void error_finalize(void) {
-    fprintf(stderr, "\n--- Scanner Summary ---\n");
-    fprintf(stderr, "Total errors:   %d\n", total_errors);
-    fprintf(stderr, "Total warnings: %d\n", total_warnings);
-    if (total_errors == 0 && total_warnings == 0) {
-        fprintf(stderr, "Scanning completed successfully.\n");
-    } else {
-        fprintf(stderr, "Scanning completed with issues.\n");
-    }
-    fprintf(stderr, "---\n");
-    if (status.debug && status.ofile) {
-        fprintf(status.ofile, "\n--- Scanner Summary ---\n");
-        fprintf(status.ofile, "Total errors:   %d\n", total_errors);
-        fprintf(status.ofile, "Total warnings: %d\n", total_warnings);
+    if (status.oform == DEBUG) {
+        fprintf(status.error_file, "\n--- Scanner Summary ---\n");
+        fprintf(status.error_file, "Total errors:   %d\n", total_errors);
+        fprintf(status.error_file, "Total warnings: %d\n", total_warnings);
         if (total_errors == 0 && total_warnings == 0) {
-            fprintf(status.ofile, "Scanning completed successfully.\n");
+            fprintf(status.error_file, "Scanning completed successfully.\n");
         } else {
-            fprintf(status.ofile, "Scanning completed with issues.\n");
+            fprintf(status.error_file, "Scanning completed with issues.\n");
         }
-        fprintf(status.ofile, "---\n");
+        fprintf(status.error_file, "---\n");
     }
 }
 const char* step_to_string(Step step) {
