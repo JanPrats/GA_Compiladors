@@ -68,7 +68,7 @@ int init_program(int argc, char* argv[]){
 
     int status_result = init_status_scn();
 
-    count_init(status.ifile_name, COUNTOUT_F);
+    COUNT_INIT();
 
     if (status_result != CORRECT_RETURN) {
         return ERROR_RETURN;
