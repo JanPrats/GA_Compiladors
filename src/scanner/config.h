@@ -36,7 +36,7 @@
 // "Flags"
 #define DEBUG_F ON //On or OFF (defined below, I hope it is not a problem)
 #define OUTFORMAT_M RELEASE //MODE of outformat (RELEASE or DEBUG)
-#define COUNTOUT_F OUT //Explained below [OUT or DBGCOUNT] (in RELEASE Mode we not count)
+#define COUNTOUT_F DBGCOUNT //Explained below [OUT or DBGCOUNT] (in RELEASE Mode we not count)
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
 

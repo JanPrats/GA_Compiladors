@@ -24,6 +24,7 @@
 
 #include "../config.h"
 #include "../module_error/module_error.h"
+#include "../count.h"
 
 int init_status_scn(void);
 
@@ -44,6 +45,7 @@ void show_help(void) { // not finished
 
 int init_program(int argc, char* argv[]){
     for (int i = 1; i < argc; i++) {
+
         if (strcmp(argv[i], HELP_F) == 0) { //If  we want to show the help manpage
             status.help = true;    // Global Variable for showing help and only showing help, no preprocessing
             return HELP_RETURN;
@@ -65,6 +67,8 @@ int init_program(int argc, char* argv[]){
     }
 
     int status_result = init_status_scn();
+
+    count_init(status.ifile_name, COUNTOUT_F);
 
     if (status_result != CORRECT_RETURN) {
         return ERROR_RETURN;
@@ -111,6 +115,7 @@ void init_automata(AutomataList* automata_list){
     for(int i = 0; i < NUM_AUTOMATA; i++){
         automata_list->automatas[i] = ALL_AUTOMATA[i];
     }
+    COUNT_GEN(NUM_AUTOMATA);
 }
 
 // FILE* set_output_test_file(const char* filename);

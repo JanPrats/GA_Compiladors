@@ -25,6 +25,7 @@
 #include "./main.h"
 
 #include "config.h"
+#include "count.h"
 
 Status status;  // ← THIS allocates the memory (only once)
 
@@ -44,7 +45,7 @@ const char* category_to_string(Category cat) {
 }
 
 void add_token_to_list(char* lexeme, Category cat) {
-
+    COUNT_COMP(1);
     if (status.all_tokens.count >= MAX_TOKENS) {
         report_warning("Maximum token count reached, token discarded", status.line, SCANNER_STEP);
         return;
@@ -59,12 +60,14 @@ void add_token_to_list(char* lexeme, Category cat) {
     t->line = status.line;
 
     status.all_tokens.count++;
+    COUNT_GEN(6);
 }
 
 
 void buffer_clear(BufferAuto *buffer) {
     buffer->len = 0;
     buffer->lexeme[0] = '\0';
+    COUNT_GEN(2);
 }
 
 void buffer_add(BufferAuto *buffer, char c) {
@@ -88,8 +91,11 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
     int i = 0;
     while (i < src->len && dest->len < MAX_TOKEN_NAME - 1) {
         dest->lexeme[dest->len++] = src->lexeme[i++];
+        COUNT_GEN(1);
+        COUNT_COMP(2);
     }
     dest->lexeme[dest->len] = '\0';
+    COUNT_GEN(1);
 
     buffer_clear(src);
 }
@@ -99,28 +105,36 @@ ActionSkip skip_nonchars(char c, char lookahead){
     bool saw_newline = false;
     
     while (c == SPACE_CHAR || c == TAB_CHAR || c == END_OF_LINE || c == CARRIAGE_RETURN) {
+        COUNT_COMP(1);
         if (c == END_OF_LINE || c == CARRIAGE_RETURN) {
             status.line++;
             saw_newline = true;  // Track that we saw a newline
+            COUNT_GEN(2);  
         }
         c = lookahead;
+        COUNT_COMP(1);  
+        COUNT_IO(1);  
         if (lookahead != EOF) {
             lookahead = fgetc(status.ifile);
         }
     }
     
+    COUNT_COMP(1); 
     if (c == EOF) {
         action.c = EOF;
         action.lookahead = EOF;
         action.to_do = EOF_RETURN;
+        COUNT_GEN(3);
     } else {
         action.c = c;
         action.lookahead = lookahead;
+        COUNT_COMP(1);
         if (saw_newline){
             action.to_do = action.to_do = EOL_RETURN;
         } else {
             action.to_do = action.to_do = CORRECT_RETURN;
         }
+        COUNT_GEN(2);
     }
     return action;
 }

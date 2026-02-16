@@ -27,7 +27,9 @@
 #include "config.h"
 #include <stdbool.h>
 
+// External references
 extern CountConfig global_count_config;
+extern Status status;  // Needed for COUNT macros to access status.line and status.ifile_name
 
 void count_init(const char* ifile_name, bool countout_flag);
 void count_increment(const char* func_name, int line, int amount, const char* counter_type);
