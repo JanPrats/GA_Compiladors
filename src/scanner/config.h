@@ -14,7 +14,7 @@
  * - Token and buffer data structures
  *
  * Team: GA
- * Contributor/s: Pol García
+ * Contributor/s: Pol García, Clara Serra
  * -----------------------------------------------------------------------------
  */
 

@@ -17,7 +17,7 @@
  * - Advances input position past consumed characters
  *
  * Team: GA
- * Contributor/s:
+ * Contributor/s: Clara Serra
  * -----------------------------------------------------------------------------
  */
 
