@@ -34,7 +34,7 @@
  *     1 - Failure (critical errors occurred during scanning)
  *
  * Team: GA
- * Contributor/s:
+ * Contributor/s: Gorka Hernandez, Andrea Salló
  * -----------------------------------------------------------------------------
  */
 
