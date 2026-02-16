@@ -39,7 +39,7 @@ void count_finalize(void);
 // When COUNTCONFIG_F is true, these expand to actual function calls
 // If the flag is false the functions are empty and do not add overhead
 
-#if COUNTCONFIG_F
+#if OUTFORMAT_M == DEBUG
 
     #define COUNT_INIT() count_init(status.ifile_name, COUNTOUT_F)
     
@@ -67,6 +67,6 @@ void count_finalize(void);
     #define COUNT_GEN(n) ((void)0)
     #define COUNT_REPORT(func_name, amount, counter_type) ((void)0)
 
-#endif // COUNTCONFIG_F
+#endif // OUTFORMAT_M == DEBUG
 
 #endif // COUNT_H

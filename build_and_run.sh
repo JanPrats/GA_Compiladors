@@ -6,6 +6,7 @@ echo "🧹 Cleaning old files..."
 rm -rf build
 rm -f scanner
 rm -f prova.cscn
+rm -f prova.cdbgcnt
 
 echo "📁 Creating build directory..."
 mkdir build

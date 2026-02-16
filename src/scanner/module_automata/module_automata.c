@@ -67,24 +67,27 @@ int search_column(AutomataDFA *a, char actual_character){
 }
 
 Two_ints search_two_columns(AutomataDFA *a, char actual_character, char lookahead){
+    int count = 0;
     COUNT_GEN(2);
     Two_ints result = { -1, -1 };   // default: not found
     for (int i = 0; i < MAX_ALPHABET_SIZE && a->alphabet[i].character != EOF; i++){
         char symbol = a->alphabet[i].character;
+        count++;
 
-        COUNT_GEN(2); //init el symbol i acció del dins els ifs
-        COUNT_COMP(1);
         if (symbol == actual_character)
             result.actual = a->alphabet[i].column;
 
-        COUNT_COMP(1);
         if (symbol == lookahead)
             result.lookahead = a->alphabet[i].column;
 
-        COUNT_COMP(2);
-        if (result.actual != -1 && result.lookahead != -1)
+        if (result.actual != -1 && result.lookahead != -1){
+            COUNT_COMP(4*count);
+            COUNT_GEN(2*count);
             break;  // both found → stop searching
+        }
     }
+    COUNT_COMP(4*count);
+    COUNT_GEN(2*count);
     return result;
 }
 
