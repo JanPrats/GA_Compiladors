@@ -8,7 +8,7 @@
  * Function Behavior:
  *
  * Team: GA
- * Contributor/s: Clara Serra
+ * Contributor/s: 
  * -----------------------------------------------------------------------------
  */
 

@@ -1,0 +1,63 @@
+// Scanner flow (call and automata relations)
+digraph ScannerFlow {
+    rankdir=LR;
+    node [shape=box, fontname="Helvetica"];
+
+    main [label="main()\n(src/scanner/main.c)"];
+    init_program [label="init_program() / init_status_scn()\n(module_init.c)"];
+    init_automata [label="init_automata()\n(module_init.c)"];
+    automata_driver [label="automata_driver()\n(module_automata.c)"];
+    skip_nonchars [label="skip_nonchars()\n(config.c)"];
+    buffer_add [label="buffer_add()\n(config.c)"];
+    update_automata [label="update_automata()\n(module_automata.c)"];
+    search_two_columns [label="search_two_columns()\n(module_automata.c)"];
+    is_accepting [label="is_accepting_state()\n(module_automata.c)"];
+    write_token [label="write_token_to_file_and_list()\n(module_automata.c)"];
+    add_token [label="add_token_to_list()\n(config.c)"];
+    restart_automatas [label="restart_automatas()\n(module_automata.c)"];
+    buffer_nonrec [label="buffer_nonrecognized\n(config.c)"];
+    file_io [label="fgetc() / status.ifile\n(file I/O)", shape=oval];
+
+    // Automata pool
+    keyword [label="keyword_automata\n(type=CAT_KEYWORD)"];
+    identifier [label="identifier_automata\n(type=CAT_IDENTIFIER)"];
+    type_a [label="type_automata\n(type=CAT_TYPE)"];
+    number [label="number_automata\n(type=CAT_NUMBER)"];
+    literal [label="literal_automata\n(type=CAT_LITERAL)"];
+    op [label="operator_automata\n(type=CAT_OPERATOR)"];
+    specials [label="specials_automata\n(type=CAT_SPECIALCHAR)"];
+
+    // Main flow
+    main -> init_program -> init_automata -> automata_driver;
+    automata_driver -> file_io;
+    automata_driver -> skip_nonchars;
+    automata_driver -> buffer_add;
+
+    // Driver dispatching to automata
+    automata_driver -> keyword;
+    automata_driver -> identifier;
+    automata_driver -> type_a;
+    automata_driver -> number;
+    automata_driver -> literal;
+    automata_driver -> op;
+    automata_driver -> specials;
+
+    // Per-automaton internals
+    keyword -> update_automata -> search_two_columns -> is_accepting;
+    identifier -> update_automata;
+    type_a -> update_automata;
+    number -> update_automata;
+    literal -> update_automata;
+    op -> update_automata;
+    specials -> update_automata;
+
+    // Acceptance path
+    update_automata -> write_token -> add_token -> restart_automatas;
+
+    // Nonrecognized path
+    automata_driver -> buffer_nonrec -> write_token [label="emit as CAT_NONRECOGNIZED when all reject"];
+
+    // Notes as graph attributes for quick reading
+    labelloc="t";
+    label="Scanner call & automata flow";
+}

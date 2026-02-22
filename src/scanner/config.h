@@ -143,6 +143,7 @@ typedef enum{
 // } Flag;
 
 
+
 //Structs
 
 typedef struct Token {

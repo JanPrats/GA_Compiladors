@@ -128,6 +128,13 @@ typedef enum{
     PARSER_STEP
 } Step;
 
+typedef enum {
+    ACTION_ERROR = 0,  // (Error sintáctico)
+    ACTION_SHIFT,      // sX: shift and go to state X
+    ACTION_REDUCE,     // rY: Reduce using production Y
+    ACTION_GOTO,       // Z: Go to state Z (used after a reduce).
+    ACTION_ACCEPT      // acc
+} ActionType;
 
 //Structs
 
@@ -192,6 +199,18 @@ typedef struct Rule {
     char* rule;
 } Rule;
 
+/* PODER HAURIA D SER AIXI????
+typedef struct {
+    int rule_id;              
+    char lhs[MAX_TOKEN_NAME]; //Left-Hand Side (Ej: "E")
+    int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
+} Rule;*/
+
+typedef struct {
+    ActionType type;//SHIFT, REDUCE, GOTO, ACCEPT, ERROR
+    int value; //Si es SHIFT/GOTO: num state. Si es REDUCE: num regla.
+} ParseAction;
+
 typedef struct SymbolVocab {
     char character;
     int column;
@@ -207,18 +226,19 @@ typedef struct AutomataDFA {
     Category type;                                  // CAT_KEYWORD (it is an enum, so include config.h to have the struct)
     bool dont_look_anymore;                         // If we have already finished the execution and we do not want to keep looking
 } AutomataDFA;
+//tmb hauria d tenir rules??
 
 typedef struct AutomataSRA {
     AutomataDFA* dfa;
     Stack* stack;
-}
+    ListTokens* tokens;
+} AutomataSRA;
 
 typedef struct Stack{
-    char stacklist[MAX_S_ELEMENTS];
+    char stacklist[MAX_TOKEN_NAME];
     int count;
     int state;  
 } Stack;
-
 
 typedef struct AutomataList {
     AutomataDFA* automatas[MAX_AUTOMATAS];  
