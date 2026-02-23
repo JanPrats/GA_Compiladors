@@ -28,77 +28,58 @@
 #include <time.h>       // For time-stamp of output logs filenames
 
 
-//GLOBAL VARIABLES (GV)
 
-//SINGULAR GV
 
-//Configuration That defines how we compile (Change depending on what we want)
-// "Flags"
+
+// ------------------COMPILE FLAGS------------------------------------------------- 
+
 #define DEBUG_F ON //On or OFF (defined below, I hope it is not a problem)
 #define OUTFORMAT_M DEBUG //MODE of outformat (RELEASE or DEBUG)
 #define COUNTOUT_F OUT //Explained below [OUT or DBGCOUNT] (in RELEASE Mode we not count)
+#define ON 1        //FOR DEBUG_F
+#define OFF 0       //FOR DEBUG_F
+#define OUT 1       //FOR COUNTOUT_F
+#define DBGCOUNT 0  //FOR COUNTOUT_F
+#define HELP_F "-help"
+#define ERRORS_F "-errors"
 
 #define PARSER_F false //Should not change until P3 (it will either continue with the parser or not) [IGNORE FOR NOW]
 
-//Language
+
+// -----------------CHARACTER CONSTANTS------------------------------------------------- 
 #define SPACE_CHAR ' '
 #define TAB_CHAR '\t'
 #define END_OF_LINE '\n'
 #define CARRIAGE_RETURN '\r'
 
-/* DEBUG_ FLAG      [For errors]
-ON: (all) messages are written to the output file
-OFF: (all) messages are written to the stdout
-*/
-/* COUNTOUT FLAG    [For counting]
-OUT: messages should be sent to the output file
-DBGCOUNT: messages should be sent to the stdout file.
-*/
 
-//These ones should not be changed (well, not usually to compile)
-#define HELP_F "-help"
-#define ERRORS_F "-errors"
-
-/////"String" lengths
+// -----------------SIZE LIMITS------------------------------------------------ 
 #define MAX_FILENAME 512        // Max File length (in bits I think) for compiler variables
 #define MAX_TOKEN_NAME 4096      // Max Key Length
 #define MAX_TOKENS 1024         // Max number of macros
 #define MAX_LINE_LENGTH 4096    // Max length of a whole line
-// #define MAX_MACRO_VALUE 1024    // MAX Value Length
-
 #define MAX_FUNCTION_NAME 512
 #define MAX_ALPHABET_SIZE 512
 #define MAX_STATES 512
 #define MAX_AUTOMATAS 256
-
 #define MAXFILENAME 256 // Maximum length of the filename for output logs
 #define MAXFILEEXT 64   // Maximum length of the file extension
+#define MAX_RHS_LENGTH 20 // Maximum number of symbols on the right-hand side of a production rule
+#define MAX_PRODUCTIONS 100 // Maximum number of production rules in the grammar
+#define MAX_STACK_SIZE 512 // Maximum size of the parsing stack
 
-//Return
+// -----------------RETURN VALUES------------------------------------------------ 
 #define ERROR_RETURN -1
 #define CORRECT_RETURN 0
 #define HELP_RETURN 1
-
-#define ACCEPT_TOKEN 2
-#define STOP_AUTOMATA 3
-
 #define EOL_RETURN 4
 #define EOF_RETURN 5
 
 
-//Other
-#define ON 1        //FOR DEBUG_F
-#define OFF 0       //FOR DEBUG_F
-#define OUT 1       //FOR COUNTOUT_F
-#define DBGCOUNT 0  //FOR COUNTOUT_F
 
+//------------------ENUMS-------------------------------------------------------
 
-
-/////
-
-//ENUMS
-
-//For error Types when there is an error
+//error
 typedef enum{
     ERR_NONE = 0,
     ERR_INVALID_ARGUMENT,
@@ -109,6 +90,10 @@ typedef enum{
     ERR_MAX_TOKENS_EXCEEDED,
     ERR_EMPTY_FILE
 } Error;
+typedef enum{ 
+    SCANNER_STEP,
+    PARSER_STEP
+} Step;
 
 
 //Token Types
@@ -123,10 +108,11 @@ typedef enum{
 	CAT_NONRECOGNIZED   // Does not fit in any of the previous
 } Category;
 
-typedef enum{ 
-    SCANNER_STEP,
-    PARSER_STEP
-} Step;
+typedef enum {  //Output format 
+    RELEASE,
+    DEBUG
+} Outformat;
+
 
 typedef enum {
     ACTION_ERROR = 0,  // (Error sintáctico)
@@ -136,80 +122,82 @@ typedef enum {
     ACTION_ACCEPT      // acc
 } ActionType;
 
-//Structs
+// ------------------Token and token list------------------------------------------------- 
 
 typedef struct Token {
     char lexeme[MAX_TOKEN_NAME];    //Literal string (lexeme)    
     Category cat;                   //Category from the ones above
     int line;                       //Line number where the token starts
-    // bool is_defined; //Not sure if needed
 } Token;
 
-// DICTIONARY NOT USED
-// typedef struct IdendifierDict {
-//     Token identifiers[MAX_TOKENS]; //Not sure if token or just a string (lexeme)
-//     int count;                      //I will leave the option to add any relevant parameter such as count
-// } IdendifierDict;
-
-//List of tokens as thy appear in the ifile
 typedef struct ListTokens {
     Token tokens[MAX_TOKENS];
     int count;
+    int pos;                    // current read head — advances on each shift
 } ListTokens;
 
+// ------------------Language------------------------------------------------- 
+typedef struct Rule {
+    int rule_id;              
+    char lhs[MAX_TOKEN_NAME]; //Left-Hand Side (Ej: "E")
+    char rhs[MAX_RHS_LENGTH][MAX_TOKEN_NAME]; //Right-Hand Side (Ej: "E + T" --> rhs[0] = "E", rhs[1] = "+", rhs[2] = "T")
+    int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
+} Rule;
 
-// Global struct used by all modules
+typedef struct Language {
+    char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
+    int  num_terminals;
+    char nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
+    int  num_nonterminals;
+    Rule productions[MAX_PRODUCTIONS];
+    int  num_productions;
+    char start_symbol[MAX_TOKEN_NAME];
+} Language;
+
+
+//------------------Parse table and DFA-------------------------------------------------
 typedef struct {
-    Outformat oform;
-	bool debug;
-    bool help;
+    ActionType type; //SHIFT, REDUCE, GOTO, ACCEPT, ERROR
+    int value; //Si es SHIFT/GOTO: num state. Si es REDUCE: num regla.
+} ParseAction;
 
-	char ifile_name[MAX_FILENAME]; 
-	char ofile_name[MAX_FILENAME];
-	FILE* ifile;
-	FILE* ofile;
-    FILE* error_file;
+// CreC Q HAURIEM DE CANVIAR i utilitzar la taula del dfa, pel q va dir la dolors!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    ListTokens all_tokens;
+typedef struct ParseTable {
+    ParseAction cells[MAX_STATES][MAX_ALPHABET_SIZE];
+    int         num_states;
+    int         num_symbols;    // num_terminals + num_nonterminals
+} ParseTable;
 
-	int line;           //In which line are we
+// ------------------Stack------------------------------------------------
+typedef struct StackElement {
+    char symbol[MAX_TOKEN_NAME];
+    int  state;
+} StackElement;
 
-    bool first_token_in_line ; //First token of the line
-    bool line_has_tokens; //Si la línia té tokens (per no imprimir línies buides en RELEASE) 
-	// bool last_in_line;  //Last Token of the line
-    // bool in_string;
-    // bool type_icv;      //Know if we are after an int, char or void declaration
-} Status;
+typedef struct Stack{
+    StackElement elements[MAX_STACK_SIZE];
+    int top; 
+} Stack;
 
+//------------------DFA and Automata-------------------------------------------------
+// typedef struct TableElement {
+//     int next_state;
+//     Rule production_rule;
+// } TableElement;
+
+// typedef struct TransitionMatrix {
+//     TableElement cells[MAX_STATES][MAX_ALPHABET_SIZE];
+// } TransitionMatrix;
 typedef struct StateRow {
     int new_state[MAX_ALPHABET_SIZE]; // Contains a state_number for each state-char pair S0_row = [1,0,3,0,2] (assume symbols from the alphabet are always in the same order)
 } StateRow;
-//???SHOULD BE [MAX_ALPHABET_SIZE] INSTEAD OF [MAX_STATES] ??????????????
 
 typedef struct TransitionMatrix {
-    TableElement cells[MAX_STATES][MAX_ALPHABET_SIZE];
+    StateRow states_rows[MAX_STATES];
+    int width;
+    int height;
 } TransitionMatrix;
-
-typedef struct TableElement {
-    int next_state;
-    Rule production_rule;
-} TableElement;
-
-typedef struct Rule {
-    char* rule;
-} Rule;
-
-/* PODER HAURIA D SER AIXI????
-typedef struct {
-    int rule_id;              
-    char lhs[MAX_TOKEN_NAME]; //Left-Hand Side (Ej: "E")
-    int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
-} Rule;*/
-
-typedef struct {
-    ActionType type;//SHIFT, REDUCE, GOTO, ACCEPT, ERROR
-    int value; //Si es SHIFT/GOTO: num state. Si es REDUCE: num regla.
-} ParseAction;
 
 typedef struct SymbolVocab {
     char character;
@@ -228,18 +216,6 @@ typedef struct AutomataDFA {
 } AutomataDFA;
 //tmb hauria d tenir rules??
 
-typedef struct AutomataSRA {
-    AutomataDFA* dfa;
-    Stack* stack;
-    ListTokens* tokens;
-} AutomataSRA;
-
-typedef struct Stack{
-    char stacklist[MAX_TOKEN_NAME];
-    int count;
-    int state;  
-} Stack;
-
 typedef struct AutomataList {
     AutomataDFA* automatas[MAX_AUTOMATAS];  
     int num_automata;
@@ -248,30 +224,63 @@ typedef struct AutomataList {
 extern AutomataDFA* ALL_AUTOMATA[];
 extern int NUM_AUTOMATA;
 
+//------------------------------SRA-------------------------------------------------
+typedef struct AutomataSRA {
+    AutomataDFA* dfa;
+    ParseTable table; 
+    Stack* stack;
+    ListTokens* tokens;
+    Language*    language;
+} AutomataSRA;
 
+//------------------Status------------------------------------------------- 
+// CREC Q HAURIEM DE CANVIAR
+typedef struct {
+    Outformat oform;
+	bool debug;
+    bool help;
 
-//Not sure if we will need these 2
-typedef struct ErrorReport {
-    Error error_type;            //Error type from the Error enum
-    Step step;                   //At which compilation step did it occur
-    int line;                    //Line number in source file
-    char message[MAX_LINE_LENGTH]; //Descriptive error message
-} ErrorReport;
+	char ifile_name[MAX_FILENAME]; 
+	char ofile_name[MAX_FILENAME];
+	FILE* ifile;
+	FILE* ofile;
+    FILE* error_file;
 
+    ListTokens all_tokens;
 
+	int line;           //In which line are we
+
+    bool first_token_in_line ; //First token of the line
+    bool line_has_tokens; //Si la línia té tokens (per no imprimir línies buides en RELEASE) 
+} Status;
 typedef struct BufferAuto {
     char lexeme[MAX_TOKEN_NAME];
     int len;
 } BufferAuto;
+extern Status status;
 
 
-extern Status status;   // declaration, NOT definition
+
+//------------------Crec q no necessitem-----------------------------------------------
+// typedef struct StateRow {
+//     int new_state[MAX_ALPHABET_SIZE]; // Contains a state_number for each state-char pair S0_row = [1,0,3,0,2] (assume symbols from the alphabet are always in the same order)
+// } StateRow;
+
+//Not sure if we will need these 2
+// typedef struct ErrorReport {
+//     Error error_type;            //Error type from the Error enum
+//     Step step;                   //At which compilation step did it occur
+//     int line;                    //Line number in source file
+//     char message[MAX_LINE_LENGTH]; //Descriptive error message
+// } ErrorReport;
+
+
 
 // Path to the logs directory: put your full path, the directory has to exist
 //#define PATHDIRLOGS "I:/Mi unidad/UPFdrive/docencia/github/compilers/modules_template/logs/" 
 #define PATHDIRLOGS "./logs/" // For running yml
 
-// Function prototypes
+//----------------------- Function prototypes------------------------------------------
 FILE* set_output_test_file(const char* filename);
 
 const char* category_to_string(Category cat);
