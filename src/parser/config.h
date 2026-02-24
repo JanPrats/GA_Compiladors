@@ -67,6 +67,7 @@
 #define MAX_RHS_LENGTH 20 // Maximum number of symbols on the right-hand side of a production rule
 #define MAX_PRODUCTIONS 100 // Maximum number of production rules in the grammar
 #define MAX_STACK_SIZE 512 // Maximum size of the parsing stack
+#define MAX_SYMBOL_LEN 64
 
 // -----------------RETURN VALUES------------------------------------------------ 
 #define ERROR_RETURN -1
@@ -90,6 +91,7 @@ typedef enum{
     ERR_MAX_TOKENS_EXCEEDED,
     ERR_EMPTY_FILE
 } Error;
+
 typedef enum{ 
     SCANNER_STEP,
     PARSER_STEP
@@ -112,7 +114,6 @@ typedef enum {  //Output format
     RELEASE,
     DEBUG
 } Outformat;
-
 
 typedef enum {
     ACTION_ERROR = 0,  // (Error sintáctico)
@@ -143,6 +144,34 @@ typedef struct Rule {
     char rhs[MAX_RHS_LENGTH][MAX_TOKEN_NAME]; //Right-Hand Side (Ej: "E + T" --> rhs[0] = "E", rhs[1] = "+", rhs[2] = "T")
     int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
 } Rule;
+
+typedef enum {
+    TERMINAL_SYMBOL,
+    NON_TERMINAL_SYMBOL
+} RuleItemType;
+
+typedef struct RuleItem {
+    RuleItemType type;
+    char symbol[MAX_SYMBOL_LEN]
+} RuleItem;
+
+typedef struct RuleV2 {
+    int rule_id;              
+    RuleItem lhs[MAX_RHS_LENGTH]; //Left-Hand Side (Ej: "E")
+    RuleItem rhs[MAX_RHS_LENGTH]; //Right-Hand Side (Ej: "E + T" --> rhs[0] = "E", rhs[1] = "+", rhs[2] = "T")
+    int lhs_length; //PER SABER EL NUM D PUSH
+    int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
+} RuleV2;
+
+typedef struct LanguageV2 {
+    RuleItem terminals[MAX_ALPHABET_SIZE];
+    int  num_terminals;
+    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
+    int  num_nonterminals;
+    RuleV2 productions[MAX_PRODUCTIONS];
+    int  num_productions;
+    char start_symbol[MAX_TOKEN_NAME];
+} LanguageV2;
 
 typedef struct Language {
     char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
