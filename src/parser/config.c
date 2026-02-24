@@ -94,6 +94,7 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
     buffer_clear(src);
 }
 
+/* Not used yet
 ActionSkip skip_nonchars(char c, char lookahead){
     ActionSkip action = {0};  // Initialize all members to 0
     bool saw_newline = false;
@@ -123,6 +124,63 @@ ActionSkip skip_nonchars(char c, char lookahead){
         }
     }
     return action;
+}
+
+*/
+
+// Parser
+
+
+//Stack Functions
+void initialize_stack(Stack *stack, AutomataDFA dfa) {
+    stack->top = -1;
+
+    // RuleItem bottom;
+    // bottom.type = TERMINAL_SYMBOL;
+    // strcpy(bottom.symbol, EPSILON);   // or "$"
+
+    // push_stack(stack, bottom, dfa.start_state);
+}
+
+void push_stack(Stack *stack, RuleItem symbol, int state) {
+    if (is_full_stack(stack)) {
+        fprintf(stderr, "Stack overflow\n");
+        return;
+    }
+
+    stack->top++;
+    stack->elements[stack->top].symbol = symbol;   // struct copy
+    stack->elements[stack->top].state = state;
+}
+
+StackElement pop_stack(Stack *stack) {
+    if (is_empty_stack(stack)) {
+        fprintf(stderr, "Stack underflow\n");
+        StackElement empty = {0};
+        return empty;
+    }
+
+    StackElement stel = stack->elements[stack->top];
+    stack->top--;
+    return stel;
+}
+
+StackElement peek_stack(const Stack *stack){ //No treu el ultim element
+    if (is_empty_stack(stack)){
+        fprintf(stderr, "Peek on empty stack\n");
+        StackElement empty = {0};
+        return empty;
+    }
+
+    return stack->elements[stack->top];
+}
+
+bool is_empty_stack(const Stack *stack) {
+    return stack->top < 0;
+}
+
+bool is_full_stack(const Stack *stack) {
+    return stack->top >= MAX_STACK_SIZE - 1;
 }
 
 

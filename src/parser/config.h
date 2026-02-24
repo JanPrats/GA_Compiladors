@@ -51,6 +51,7 @@
 #define TAB_CHAR '\t'
 #define END_OF_LINE '\n'
 #define CARRIAGE_RETURN '\r'
+#define EPSILON 'ε'
 
 
 // -----------------SIZE LIMITS------------------------------------------------ 
@@ -200,13 +201,13 @@ typedef struct ParseTable {
 
 // ------------------Stack------------------------------------------------
 typedef struct StackElement {
-    char symbol[MAX_TOKEN_NAME];
+    RuleItem symbol;
     int  state;
 } StackElement;
 
 typedef struct Stack{
-    StackElement elements[MAX_STACK_SIZE];
-    int top; 
+    StackElement elements[MAX_STACK_SIZE]; //There is an approach where you push jsut the symbol and then the state so [0 'T' 1 '+' 2 'E' 3], but we will do something more similar to [['T', 1]['+',2]['E',3]]
+    int top; //Position of the top element in stack [0,1,2,3]
 } Stack;
 
 //------------------DFA and Automata-------------------------------------------------
@@ -323,5 +324,19 @@ void buffer_add(BufferAuto *buffer, char c);
 void buffer_append(BufferAuto *dest, const BufferAuto *src);
 
 void buffer_move_append(BufferAuto *dest, BufferAuto *src);
+
+//Stack
+
+void initialize_stack(Stack *stack, AutomataDFA dfa); //Before using a stack initialize it
+
+void push_stack(Stack *stack, RuleItem symbol, int state); // push an element [rule symbol + state we are going to]
+
+StackElement pop_stack(Stack *stack); //Pop stack
+
+StackElement peek_stack(const Stack *stack); //Just see the top element, but not pop it
+
+bool is_empty_stack(const Stack *stack);
+
+bool is_full_stack(const Stack *stack);
 
 #endif // CONFIG_FILES_H
