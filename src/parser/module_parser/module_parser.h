@@ -4,4 +4,6 @@
 
 AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens* tokens, Language* language);
 
+void destroySRA(AutomataSRA* sra);
+
 #endif // MODULE_PARSER_H

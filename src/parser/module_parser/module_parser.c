@@ -23,3 +23,15 @@ AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens
 
     return sra; //Return pointer to the initialized SRA with all parameters set
 }
+
+//Free resources owned by an AutomataSRA allocated with initializeSRA. Free the stack and the SRA itself, but not the DFA, tokens or language.
+void destroySRA(AutomataSRA* sra){
+    if (sra == NULL) return;
+
+    if (sra->stack != NULL){
+        free(sra->stack);
+        sra->stack = NULL;
+    }
+
+    free(sra);
+}
