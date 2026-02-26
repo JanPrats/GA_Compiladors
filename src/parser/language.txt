@@ -1,0 +1,275 @@
+# =============================================================================
+# SECTION 1: GRAMMAR DEFINITION AND PRODUCTION RULES
+# =============================================================================
+
+[GRAMMAR]
+START_SYMBOL: S
+NON_TERMINALS: S E T F
+TERMINALS: + * ( ) num $
+
+[PRODUCTIONS]
+1 | S -> E
+2 | E -> E + T
+3 | E -> T
+4 | T -> T * F
+5 | T -> F
+6 | F -> ( E )
+7 | F -> num
+
+# =============================================================================
+# SECTION 2: LR(0) ITEM SETS (CLOSURES)
+# =============================================================================
+# Format: state_number | item (production with dot position)
+# The dot (.) indicates the current position in the production
+
+[ITEM_SETS]
+# State 0 - Initial state
+0 | S -> . E
+0 | E -> . E + T
+0 | E -> . T
+0 | T -> . T * F
+0 | T -> . F
+0 | F -> . ( E )
+0 | F -> . num
+
+# State 1 - After recognizing S
+1 | S -> E .
+1 | E -> E . + T
+
+# State 2 - After recognizing E from state 0
+2 | E -> T .
+2 | T -> T . * F
+
+# State 3 - After recognizing T from state 0
+3 | T -> F .
+
+# State 4 - After recognizing F from state 0
+4 | F -> num .
+
+# State 5 - After shift (
+5 | F -> ( . E )
+5 | E -> . E + T
+5 | E -> . T
+5 | T -> . T * F
+5 | T -> . F
+5 | F -> . ( E )
+5 | F -> . num
+
+# State 6 - After shift num from state 0
+6 | F -> num .
+
+# State 7 - After shift + from state 1
+7 | E -> E + . T
+7 | T -> . T * F
+7 | T -> . F
+7 | F -> . ( E )
+7 | F -> . num
+
+# State 8 - After shift * from state 2
+8 | T -> T * . F
+8 | F -> . ( E )
+8 | F -> . num
+
+# State 9 - After recognizing T from state 7
+9 | E -> E + T .
+9 | T -> T . * F
+
+# State 10 - After recognizing F from state 8
+10 | T -> T * F .
+
+# State 11 - After recognizing E from state 5
+11 | F -> ( E . )
+11 | E -> E . + T
+
+# State 12 - After shift ) from state 11
+12 | F -> ( E ) .
+
+# State 13 - After recognizing T from state 5
+13 | E -> T .
+13 | T -> T . * F
+
+# State 14 - After recognizing F from state 5
+14 | T -> F .
+
+# State 15 - After shift ( from state 5
+15 | F -> ( . E )
+15 | E -> . E + T
+15 | E -> . T
+15 | T -> . T * F
+15 | T -> . F
+15 | F -> . ( E )
+15 | F -> . num
+
+# State 16 - After shift num from state 5
+16 | F -> num .
+
+# State 17 - After shift + from state 11
+17 | E -> E + . T
+17 | T -> . T * F
+17 | T -> . F
+17 | F -> . ( E )
+17 | F -> . num
+
+# State 18 - After shift * from state 13
+18 | T -> T * . F
+18 | F -> . ( E )
+18 | F -> . num
+
+# State 19 - After recognizing T from state 17
+19 | E -> E + T .
+19 | T -> T . * F
+
+# State 20 - After recognizing F from state 18
+20 | T -> T * F .
+
+# State 21 - After recognizing E from state 15
+21 | F -> ( E . )
+21 | E -> E . + T
+
+# State 22 - After shift ) from state 21
+22 | F -> ( E ) .
+
+# =============================================================================
+# SECTION 4: SHIFT/REDUCE AUTOMATON - ACTION TABLE
+# =============================================================================
+# Format: state | terminal | action
+# Actions: s<state> (shift), r<rule> (reduce), acc (accept), err (error)
+
+[ACTION_TABLE]
+# State | $    | +    | *    | (    | )    | num
+0       | err  | err  | err  | s5   | err  | s6
+1       | acc  | err  | err  | err  | err  | err
+2       | r1   | s7   | err  | err  | err  | err
+3       | r3   | r3   | s8   | err  | err  | err
+4       | r5   | r5   | r5   | err  | err  | err
+5       | err  | err  | err  | s15  | err  | s16
+6       | r7   | r7   | r7   | err  | err  | err
+7       | err  | err  | err  | s5   | err  | s6
+8       | err  | err  | err  | s5   | err  | s6
+9       | r2   | r2   | err  | err  | err  | err
+10      | r4   | r4   | r4   | err  | err  | err
+11      | err  | s17  | err  | err  | s12  | err
+12      | r6   | r6   | r6   | err  | err  | err
+13      | err  | r3   | s18  | err  | r3   | err
+14      | err  | r5   | r5   | err  | r5   | err
+15      | err  | err  | err  | s15  | err  | s16
+16      | err  | r7   | r7   | err  | r7   | err
+17      | err  | err  | err  | s15  | err  | s16
+18      | err  | err  | err  | s15  | err  | s16
+19      | err  | r2   | r2   | err  | r2   | err
+20      | err  | r4   | r4   | err  | r4   | err
+21      | err  | s17  | err  | err  | s22  | err
+22      | err  | r6   | r6   | err  | r6   | err
+
+# =============================================================================
+# SECTION 5: SHIFT/REDUCE AUTOMATON - GOTO TABLE
+# =============================================================================
+# Format: state | non_terminal | goto_state
+
+[GOTO_TABLE]
+# State | S    | E    | T    | F
+0       | 1    | 2    | 3    | 4
+1       | err  | err  | err  | err
+2       | err  | err  | err  | err
+3       | err  | err  | err  | err
+4       | err  | err  | err  | err
+5       | err  | 11   | 13   | 14
+6       | err  | err  | err  | err
+7       | err  | err  | 9    | 4
+8       | err  | err  | err  | 10
+9       | err  | err  | err  | err
+10      | err  | err  | err  | err
+11      | err  | err  | err  | err
+12      | err  | err  | err  | err
+13      | err  | err  | err  | err
+14      | err  | err  | err  | err
+15      | err  | 21   | 13   | 14
+16      | err  | err  | err  | err
+17      | err  | err  | 19   | 14
+18      | err  | err  | err  | 20
+19      | err  | err  | err  | err
+20      | err  | err  | err  | err
+21      | err  | err  | err  | err
+22      | err  | err  | err  | err
+
+# =============================================================================
+# SECTION 6: STATE TRANSITIONS
+# =============================================================================
+# Format: from_state | symbol | to_state
+# This section documents all transitions in the automaton
+
+[TRANSITIONS]
+# From State 0
+0 | ( | 5
+0 | num | 6
+0 | S | 1
+0 | E | 2
+0 | T | 3
+0 | F | 4
+
+# From State 1
+1 | + | 7
+
+# From State 2
+2 | * | 8
+
+# From State 5
+5 | ( | 15
+5 | num | 16
+5 | E | 11
+5 | T | 13
+5 | F | 14
+
+# From State 7
+7 | ( | 5
+7 | num | 6
+7 | T | 9
+7 | F | 4
+
+# From State 8
+8 | ( | 5
+8 | num | 6
+8 | F | 10
+
+# From State 11
+11 | ) | 12
+11 | + | 17
+
+# From State 13
+13 | * | 18
+
+# From State 15
+15 | ( | 15
+15 | num | 16
+15 | E | 21
+15 | T | 13
+15 | F | 14
+
+# From State 17
+17 | ( | 15
+17 | num | 16
+17 | T | 19
+17 | F | 14
+
+# From State 18
+18 | ( | 15
+18 | num | 16
+18 | F | 20
+
+# From State 21
+21 | ) | 22
+21 | + | 17
+
+# =============================================================================
+# SECTION 7: SYMBOL PROPERTIES
+# =============================================================================
+
+[SYMBOL_PROPERTIES]
+# Terminal symbols and their precedence/associativity
+# Format: symbol | type | precedence | associativity
++ | TERMINAL | 1 | LEFT
+* | TERMINAL | 2 | LEFT
+( | TERMINAL | 0 | NONE
+) | TERMINAL | 0 | NONE
+num | TERMINAL | 0 | NONE
+$ | TERMINAL | 0 | NONE
