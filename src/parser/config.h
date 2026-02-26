@@ -69,13 +69,20 @@
 #define MAX_PRODUCTIONS 100 // Maximum number of production rules in the grammar
 #define MAX_STACK_SIZE 512 // Maximum size of the parsing stack
 #define MAX_SYMBOL_LEN 64
+#define MAX_INPUT_LENGTH 1024
+#define MAX_OPERATION_NAME 256
 
 // -----------------RETURN VALUES------------------------------------------------ 
 #define ERROR_RETURN -1
 #define CORRECT_RETURN 0
 #define HELP_RETURN 1
+
 #define EOL_RETURN 4
 #define EOF_RETURN 5
+#define EOTokenList 6
+
+#define NOT_REJECTED 7
+#define NOT_REJECTED 8
 
 
 
@@ -121,7 +128,8 @@ typedef enum {
     ACTION_SHIFT,      // sX: shift and go to state X
     ACTION_REDUCE,     // rY: Reduce using production Y
     ACTION_GOTO,       // Z: Go to state Z (used after a reduce).
-    ACTION_ACCEPT      // acc
+    ACTION_ACCEPT,      // acc
+    ACTION_REJECT
 } ActionType;
 
 // ------------------Token and token list------------------------------------------------- 
@@ -259,7 +267,7 @@ typedef struct AutomataSRA {
     AutomataDFA* dfa;
     ParseTable table; 
     Stack* stack;
-    ListTokens* tokens;
+    ListTokens* tokens; //Potser canviaria això per un contador (que conti per quin element de la llista anem) i que la llista sigui global
     Language*    language;
 } AutomataSRA;
 
