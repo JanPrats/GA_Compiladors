@@ -315,6 +315,8 @@ FILE* set_output_test_file(const char* filename);
 
 const char* category_to_string(Category cat);
 
+Category string_to_category(const char* str);
+
 void add_token_to_list(char* lexeme, Category cat);
 
 void buffer_clear(BufferAuto *buffer);
