@@ -1,11 +1,16 @@
 # =============================================================================
 # SECTION 1: GRAMMAR DEFINITION AND PRODUCTION RULES
 # =============================================================================
+# IMPORTANT
+# We transform (lexeme, action/goto column) from language.txt into a ( TERMINAL, (<lexeme, category>) , action/goto column ) inside RuleItem : {RuleItemType type; Token token; int column;}
+# CAT_TERMINAL elements have category string_to_category(lexeme), all the others have CAT_INDIFERENT category (category is added in the code, not in this file)
+# for PRODUCTION RULES we search each symbol from both hs (rhs and lhs) to find one that is in the vocabulary defined in GRAMMAR. Then we add them to the RulesV2 structure
 
 [GRAMMAR]
-START_SYMBOL: S
-NON_TERMINALS: S E T F
-TERMINALS: + * ( ) num $
+START_SYMBOL: "S"
+NON_TERMINALS: ("S",0) ("E",1) ("T",2) ("F",3)
+TERMINALS: ("+",1) ("*",2) ("(",3) (")",4) ("$",0)
+CAT_TERMINAL: ("CAT_NUMBER",5)
 
 [PRODUCTIONS]
 1 | S -> E

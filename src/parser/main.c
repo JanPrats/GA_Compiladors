@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
             status.all_tokens.count, status.ifile_name);
 
     /*
-     * TODO (module_parser): Load language definition and run SRA.
+     * // TODO (module_parser): Load language definition and run SRA.
      *
      * Language language;
      * load_language("language.txt", &language);
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
      * build_parse_table(&language, &dfa, &table);
      *
      * AutomataSRA *sra = initializeSRA(&dfa, &table, &status.all_tokens, &language);
-     * automata_driver(sra);
+     * automatasra_driver(sra);
      * destroySRA(sra);
      */
 

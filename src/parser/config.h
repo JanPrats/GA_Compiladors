@@ -115,7 +115,8 @@ typedef enum{
 	CAT_LITERAL,        // " ASCII " (really any string between "")
 	CAT_OPERATOR,       // = or > or + or *         ( i guess not - nor / nor < nor =< etcetc)
 	CAT_SPECIALCHAR,    // ( or ) or ; or { or } or [ or ] or ,
-	CAT_NONRECOGNIZED   // Does not fit in any of the previous
+	CAT_NONRECOGNIZED,   // Does not fit in any of the previous
+    CAT_INDIFERENT
 } Category;
 
 typedef enum {  //Output format 
@@ -147,12 +148,12 @@ typedef struct ListTokens {
 } ListTokens;
 
 // ------------------Language------------------------------------------------- 
-typedef struct Rule {
-    int rule_id;              
-    char lhs[MAX_TOKEN_NAME]; //Left-Hand Side (Ej: "E")
-    char rhs[MAX_RHS_LENGTH][MAX_TOKEN_NAME]; //Right-Hand Side (Ej: "E + T" --> rhs[0] = "E", rhs[1] = "+", rhs[2] = "T")
-    int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
-} Rule;
+// typedef struct Rule {
+//     int rule_id;              
+//     char lhs[MAX_TOKEN_NAME]; //Left-Hand Side (Ej: "E")
+//     char rhs[MAX_RHS_LENGTH][MAX_TOKEN_NAME]; //Right-Hand Side (Ej: "E + T" --> rhs[0] = "E", rhs[1] = "+", rhs[2] = "T")
+//     int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
+// } Rule;
 
 typedef enum {
     TERMINAL_SYMBOL,
@@ -161,7 +162,8 @@ typedef enum {
 
 typedef struct RuleItem {
     RuleItemType type;
-    char symbol[MAX_SYMBOL_LEN]
+    Token token; //Si lexeme te algun caracter mirarem el caracter, si està vuit llavors mirarem la category
+    int column;
 } RuleItem;
 
 typedef struct RuleV2 {
@@ -172,25 +174,26 @@ typedef struct RuleV2 {
     int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
 } RuleV2;
 
-typedef struct LanguageV2 {
+typedef struct LanguageV2 { // Language without Goto
     RuleItem terminals[MAX_ALPHABET_SIZE];
     int  num_terminals;
-    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
-    int  num_nonterminals;
+    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME]; //Podriem borrar això crec
+    int  num_nonterminals; //I aixo 
     RuleV2 productions[MAX_PRODUCTIONS];
     int  num_productions;
     char start_symbol[MAX_TOKEN_NAME];
+    AutomataSRA* sra;
 } LanguageV2;
 
-typedef struct Language {
-    char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
-    int  num_terminals;
-    char nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
-    int  num_nonterminals;
-    Rule productions[MAX_PRODUCTIONS];
-    int  num_productions;
-    char start_symbol[MAX_TOKEN_NAME];
-} Language;
+// typedef struct Language {
+//     char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
+//     int  num_terminals;
+//     char nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
+//     int  num_nonterminals;
+//     Rule productions[MAX_PRODUCTIONS];
+//     int  num_productions;
+//     char start_symbol[MAX_TOKEN_NAME];
+// } Language;
 
 
 //------------------Parse table and DFA-------------------------------------------------
@@ -212,6 +215,10 @@ typedef struct StackElement {
     RuleItem symbol;
     int  state;
 } StackElement;
+
+// [0, +, 1, * 3]
+
+// [(+,1), (*,3)]
 
 typedef struct Stack{
     StackElement elements[MAX_STACK_SIZE]; //There is an approach where you push jsut the symbol and then the state so [0 'T' 1 '+' 2 'E' 3], but we will do something more similar to [['T', 1]['+',2]['E',3]]
@@ -267,8 +274,7 @@ typedef struct AutomataSRA {
     AutomataDFA* dfa;
     ParseTable table; 
     Stack* stack;
-    ListTokens* tokens; //Potser canviaria això per un contador (que conti per quin element de la llista anem) i que la llista sigui global
-    Language*    language;
+    int tokens; //Potser canviaria això per un contador (que conti per quin element de la llista anem) i que la llista sigui global
 } AutomataSRA;
 
 //------------------Status------------------------------------------------- 

@@ -2,7 +2,7 @@
 #include <string.h>
 #include "module_parser.h"
 
-AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens* tokens, Language* language){
+AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens* tokens, LanguageV2* language){
     if (dfa == NULL || table == NULL) return NULL;
     AutomataSRA* sra = (AutomataSRA*)malloc(sizeof(AutomataSRA)); //guardem memoria per SRA i afegim tots els elements que necessita
     if (!sra) return NULL;
@@ -19,7 +19,7 @@ AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens
     initialize_stack(sra->stack, *dfa);
     //Set tokens and language pointers
     sra->tokens = tokens;
-    sra->language = language;
+    //sra->language = language;
 
     return sra; //Return pointer to the initialized SRA with all parameters set
 }
@@ -36,28 +36,76 @@ void destroySRA(AutomataSRA* sra){
     free(sra);
 }
 
-ActionType update_automata(AutomataSRA *a, Token tokn, Token lookahead) {
+ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* type){ //example: input Token = <"9", CAT_NUMBER>
+    /*
+    Search throughout the vocabulary (the one in the sra inside language)
+    For each ( (type, (<lexeme, category>) , column ) inside each vocabulary    // For example : ( (TERMINAL, (<"+", CAT_INDIFERENT>) , 1 )
+    Take the category and see if it is of type CAT_INDIFERENT
+        if it is: compare input token lexeme with vocab's token lexeme
+        else:     compare input token category with vocab's token category      // In our example we would compare "9" with "+" ==> Not equal
     
-    // Two_ints acala = search_two_columns(a, c, lookahead); //Search the column of TransitionMatrix of both current character and lookahead character
+    When it finds a match, then assign type from vocab to type from input (so that it can be used outside function)
+    Then it takes the column and the current_state from sra. 
+        If type = Terminal ==>      search in SRA's Table       [action table]
+        If type = Non-terminal ==>  search in SRA's DFA's Table [goto table]
+    if action table ==>
+    Use a function (needs to be created) to detect if it is a accept, reject, shift, reduce and create a ParseAction variable with it's type_of_action and number (from s2 to {SHIFT, 2})
+    If goto table ==> 
+    Create a ParseAction with {GOTO, next_state}
+    return this variable for both cases
+    */
+    
+}
 
-    // int new_state = a->matrix.states_rows[a->current_state].new_state[acala.actual]; 
+void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
+    /*
+    Takes the Rule 
+    Looks at its rhs length (a parameter in the struct)
+    Pops as many times as rule's rhs length
+    Adds lhs symbol(s) to Token lhs* {Since it is a pointer it should change the original array}
+    adds lhs_length to num_tokens to know the lhs lenght outside this function
+    */
+}
 
-    // a->current_state = new_state; //Update Automata
+ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language) {
+    ParseAction action; // [SHIFT, NEXT_TOKEN] or [GOTO, NEXT_TOKEN] or [REDUCE, RULEID]
+    RuleItemType type_tnt; //Is our token a terminal or a non-terminal?
+    action = get_next_action(a, token, &type_tnt); //Get next action (and assign T or NT to type_tnt)
+    ActionType returned = action.type;
+    if (action.type == ACTION_ACCEPT){
+        if (is_acepting_state(action.value)){
+            return ACTION_ACCEPT;
+        } else {
+            return ACTION_REJECT;
+        }
+    }
+    else if (action.type == ACTION_SHIFT || action.type == ACTION_GOTO)
+    {
+        RuleItem ruit; //Item to store in Stack (token + type_tnt)
+        ruit.token = token;
+        ruit.type = type_tnt;
+        push_stack(a->stack, ruit, action.value); //Push item to stack
+        a->dfa->current_state = action.value; //Update Automata0s current state
+    }
+    else if (action.type == ACTION_REDUCE)
+    {
+        RuleV2 rule2r = language->productions[action.value];
+        Token lhs[MAX_RHS_LENGTH];
+        int num_tokens;
+        
+        reduce_rule(a->stack, &rule2r, &lhs, &num_tokens); // pop following rhs
 
-    // if (new_state == 0)             //This can only happen if the character is the first to be put from initial state. So we would already stop the automata,
-    //     return STOP_AUTOMATA;       // In any other case we would have seen the Lookahead going to NULL state
-
-    // int lookahead_state = a->matrix.states_rows[new_state].new_state[acala.lookahead]; //See where we would go in the next step (with the lookahead)
-
-    // if (lookahead_state == 0){  //If in the next step we would go to NULL state we consider the TOKEN finished
-    //     bool accept_token = is_accepting_state(a, new_state); 
-    //     COUNT_GEN(2);
-    //     COUNT_COMP(1);
-    //     if (accept_token)       //If we are in an accepting state we accept the token
-    //         return ACCEPT_TOKEN;
-    //     return STOP_AUTOMATA;   //Else we would reject the TOKEN and stop the automata
-    // }
-    // return CORRECT_RETURN;
+        for (int i = 0; i<=num_tokens; i++){ //Not sure if i<=num_tokens or i<num_tokens | MUST NOT CONSUME LOOKAHEAD
+            returned = update_automatasra(a, lhs[i], language);
+            if (returned == ACTION_REJECT || returned == ACTION_ERROR){
+                return returned;
+            }
+        }
+    }
+    
+    token.line = a->tokens; //since we won't be using token.line anymore we substitute it by the position on the list where we found this token (can be used to determine where to puta | or · in the output <input> column. F.example { 9 * | ( 5 + 2 )} )
+    write_update_to_output(*language->sra->stack, token, action); // See function for explanation. stack --> State, tokn --> input, stack --> stack, decisiton --> operation
+    return returned;
 }
 
 
@@ -70,7 +118,7 @@ Token read_next_token(ListTokens * tokenlist, int* returned){ //This input param
     returned = CORRECT_RETURN;
 }
 
-int write_update_to_output(Stack stack, Token tokn, ActionType op){
+int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     /*
     "Adds a row to the output table"
 
@@ -98,70 +146,32 @@ int write_update_to_output(Stack stack, Token tokn, ActionType op){
  * Driver que processa un fitxer amb múltiples autòmata DFA
  * Escriu tokens reconeguts i no reconeguts en fitxers separats
  */
-void automata_driver(AutomataSRA *automata_sra){
+void automatasra_driver(LanguageV2 * language){
     int returned;
-    Token tokn = read_next_token(automata_sra->tokens, &returned); // Caràcter llegit del fitxer
+    Token tokn = read_next_token(language->sra->tokens, &returned); // Caràcter llegit del fitxer
 
     if (returned == EOTokenList){
         report_error_typed(ERR_EMPTY_FILE, 0, SCANNER_STEP);
         return;
     }
+
     int returned_copy = returned;
-    
-    Token lookahead = read_next_token(automata_sra->tokens, &returned); // Caràcter llegit del fitxer
-    // BufferAuto buffer;
-    // BufferAuto buffer_nonrecognized;
-    // buffer_clear(&buffer);
-    // buffer_clear(&buffer_nonrecognized);
-    
-    // Category nonrecognized_category = CAT_NONRECOGNIZED;
 
     while (returned != EOTokenList){ //Anar llegint el fitxer
-        // bool accepted = false; // Indica si algun autòmata ha acceptat aquest token
-        //buffer_add(&buffer, c);
-
         
-        ActionType operation = update_automata(automata_sra, tokn, lookahead);
+        ActionType operation = update_automatasra(language->sra, tokn, language);
 
         if (operation != ACTION_REJECT){ // L'autòmata ha arribat a un estat d'acceptació 
-
-            // if(buffer_nonrecognized.len != 0){
-            //     write_token_to_file_and_list(&buffer_nonrecognized, nonrecognized_category);
-            //     buffer_clear(&buffer_nonrecognized);
-            // }  
-            write_update_to_output(*automata_sra->stack, tokn, operation); // See function for explanation. stack --> State, tokn --> input, stack --> stack, decisiton --> operation
-            // accepted = true; // Marcar que s'ha acceptat un token
-            // break;           // Reiniciarem tots els autòmata després
+            int a = 0;
             
         } else { // L'autòmata ha rebutjat, marcar com a "no mirar més"
-            write_update_to_output(*automata_sra->stack, tokn, operation); // See function for explanation. stack --> State, tokn --> input, stack --> stack, decisiton --> operation
+            int a = 0;
             break;
         }
-
-        // if (accepted){ //Si algun dels automates ha acceptat el token
-        //     buffer_clear(&buffer);
-        //     restart_automatas(automata_sra, num_automata);
-        // }
-        // else {
-        //     bool all_done = true;
-        //     for (int i = 0; i < num_automata; i++){ // Comprovar si tots els autòmata han rebutjat el caràcter
-
-        //         if (!automata_sra[i]->dont_look_anymore){
-        //             all_done = false;
-        //             break;
-        //         }
-        //     }
-
-        //     if (all_done){
-        //         buffer_move_append(&buffer_nonrecognized, &buffer);
-        //         // report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line);
-        //         restart_automatas(automata_sra, num_automata);
-        //     }
-        // }
-        tokn = lookahead; //lookahead becomes the actual char
+        tokn = read_next_token(language->sra->tokens, &returned);
     }
     
-    if(returned_copy != EOTokenList && automata_sra->tokens->count == 0){ //Case of file with only one character, we do not handle this case
+    if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case
         report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line, SCANNER_STEP);
     }
 }
