@@ -44,6 +44,17 @@ const char* category_to_string(Category cat) {
     }
 }
 
+Category string_to_category(const char* str) {
+    if (strcmp(str, "CAT_NUMBER")       == 0) return CAT_NUMBER;
+    if (strcmp(str, "CAT_IDENTIFIER")   == 0) return CAT_IDENTIFIER;
+    if (strcmp(str, "CAT_KEYWORD")      == 0) return CAT_KEYWORD;
+    if (strcmp(str, "CAT_TYPE")         == 0) return CAT_TYPE;
+    if (strcmp(str, "CAT_LITERAL")      == 0) return CAT_LITERAL;
+    if (strcmp(str, "CAT_OPERATOR")     == 0) return CAT_OPERATOR;
+    if (strcmp(str, "CAT_SPECIALCHAR")  == 0) return CAT_SPECIALCHAR;
+    return CAT_NONRECOGNIZED;
+}
+
 void add_token_to_list(char* lexeme, Category cat) {
     if (status.all_tokens.count >= MAX_TOKENS) {
         report_warning("Maximum token count reached, token discarded", status.line, SCANNER_STEP);
