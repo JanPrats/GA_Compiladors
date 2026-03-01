@@ -49,7 +49,7 @@ TERMINALS: + * ( ) num $
 22      | err  | r6   | r6   | err  | r6   | err
 
 # =============================================================================
-# SECTION 5: SHIFT/REDUCE AUTOMATON - GOTO TABLE
+# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE
 # =============================================================================
 # Format: state | non_terminal | goto_state
 
