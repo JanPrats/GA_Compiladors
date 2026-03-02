@@ -95,28 +95,9 @@ int main(int argc, char *argv[]) {
     if (init_parser(argv[1]) != CORRECT_RETURN) {
         return 1;
     }
-
-    /* --- Detectar extensió i carregar tokens -------------------------------- */
-    char path[MAX_FILENAME], filename[MAX_FILENAME], extension[MAXFILEEXT];
-    split_path(status.ifile_name, path, filename, extension);
-
-    if (strcmp(extension, "cscn") == 0) {
-        // Entrada directa: fitxer de tokens del scanner
-        int ret = load_tokens_from_file(status.ifile_name);
-        if (ret != CORRECT_RETURN) {
-            fprintf(stderr, "Error: failed to load tokens from '%s'\n", status.ifile_name);
-            if (status.ifile)  { fclose(status.ifile);  status.ifile  = NULL; }
-            if (status.ofile)  { fclose(status.ofile);  status.ofile  = NULL; }
-            return 1;
-        }
-    } else if (strcmp(extension, "c") == 0) {
-        // Entrada .c: primer executem el scanner, després el parser llegeix els tokens de memòria
-        AutomataList automata_list;
-        init_automata(&automata_list);
-        automata_driver(automata_list.automatas, automata_list.num_automata);
-        // status.all_tokens ja està ple perquè el scanner usa add_token_to_list()
-    } else {
-        fprintf(stderr, "Error: unsupported file extension '.%s'. Use .cscn or .c\n", extension);
+    /* --- Carregar tokens (detecta extensió i delega al mòdul) -------------- */
+    if (load_tokens() != CORRECT_RETURN) {
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
