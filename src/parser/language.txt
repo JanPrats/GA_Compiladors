@@ -38,7 +38,7 @@ CAT_TERMINAL: ("CAT_NUMBER",5)
 6       | r7   | r7   | r7   | err  | err  | err
 7       | err  | err  | err  | s5   | err  | s6
 8       | err  | err  | err  | s5   | err  | s6
-9       | r2   | r2   | err  | err  | err  | err
+9       | r2   | r2   | s8   | err  | err  | err
 10      | r4   | r4   | r4   | err  | err  | err
 11      | err  | s17  | err  | err  | s12  | err
 12      | r6   | r6   | r6   | err  | err  | err
