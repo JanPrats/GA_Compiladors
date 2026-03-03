@@ -357,4 +357,9 @@ bool is_empty_stack(const Stack *stack);
 
 bool is_full_stack(const Stack *stack);
 
+// Helper functions for parser output
+void stack_to_string(const Stack *stack, char *output, size_t output_size);
+
+void action_to_string(ParseAction action, char *output, size_t output_size);
+
 #endif // CONFIG_FILES_H

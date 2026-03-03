@@ -103,20 +103,25 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
 }
 
 
-Token read_next_token(AutomataSRA sra, int* returned){ //This input parameter could be changed depending on what we want
+Token read_next_token(AutomataSRA* sra, int* returned){ //This input parameter could be changed depending on what we want
     //Read the handout first, because I'm writting this from what I can recall, but I may be wrong.
     //If we are given a list in memory it reads the next element in the list
 
     //If we are given a file, we either call a function that reads <lexeme, category> pattern each time we want to read a token
     // Or we put all the file into a list in memory at a time and use the other method.
     
-    int count = sra.tokens;         // count = [0,1,...,N-1] where count is the position in the List of Tokens that our sra is at.
-    sra.tokens = sra.tokens + 1;    // count++ {since we have consumed a token}
+    int count = sra->tokens;         // count = [0,1,...,N-1] where count is the position in the List of Tokens that our sra is at.
+    sra->tokens = sra->tokens + 1;    // count++ {since we have consumed a token}
 
     returned = CORRECT_RETURN;      // Unless proved wrong, we are reading fine
 
-    if (count >= status.all_tokens.count){ //If count ==
+    if (count >= status.all_tokens.count){ //If count >= globaltokenlist.count (if globaltokenlist.count == k ; it contains k elements so list[k-1] contains the last element)
         returned == EOTokenList;
+        Token eof;
+        //eof.lexeme to do
+        eof.line = sra->tokens;
+        eof.cat = CAT_INDIFERENT;
+        return eof;
     }
 
     return status.all_tokens.tokens[count];
@@ -126,23 +131,49 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     /*
     "Adds a row to the output table"
 
-    -------------------------------------
-    | State | Input | Stack | Operation |
-    -------------------------------------
-    |   0   | int   |  E    | Reduce    |
-    -------------------------------------
+    --------------------------------------------
+    | State | Input | Stack | Operation        |
+    --------------------------------------------
+    |   0   | int   |  E    | Reduce 5 or R5   |
+    --------------------------------------------
     */
-    // Ja ens encarregarem de que es vegi bonic després
+    // Get the state from the top of the stack
     StackElement temporal_element = peek_stack(&stack);
     int state = temporal_element.state;
+    
+    // Build the input string (tokens read so far with a | marker)
     char input[MAX_INPUT_LENGTH];
-    //L'input molaria tenir com una llista interna dels elements llegits i que posi un | al lloc on estim llegint ara (com a la slide 21 de la T4)
-    char stack[MAX_INPUT_LENGTH];
-    //Hauriem de cridar una funció que passi l'stack de Stack a string
+    input[0] = '\0';
+    
+    // Add all tokens read so far up to the current token position
+    for (int i = 0; i < status.all_tokens.count && i < tokn.line; i++) {
+        if (i > 0) strcat(input, " ");
+        strcat(input, status.all_tokens.tokens[i].lexeme);
+    }
+    // Add the marker for current position
+    if (tokn.line < status.all_tokens.count) {
+        strcat(input, " | ");
+        strcat(input, tokn.lexeme);
+    } else if (tokn.line == status.all_tokens.count) {
+        strcat(input, " | ");
+    }
+    
+    // Get stack representation (from 0 to top)
+    char stack_str[MAX_INPUT_LENGTH];
+    stack_to_string(&stack, stack_str, sizeof(stack_str));
+    
+    // Get operation representation (e.g., S6, R7, Accept, Reject)
     char operation[MAX_OPERATION_NAME];
-    //Hauriem de cridar una funció que passi de ActionType a String
-
-    //fprintf(outputfile, "| ",state, " | ", input[MAX_INPUT_LENGTH], " | ", char stack[MAX_INPUT_LENGTH], " | ", char operation[MAX_OPERATION_NAME]" |",);
+    action_to_string(op, operation, sizeof(operation));
+    
+    // Write the formatted row to output file
+    // Format: | State | Input | Stack | Operation |
+    fprintf(status.ofile, "| %5d | %-8s | %-10s | %-20s |\n", 
+            state, 
+            input, 
+            stack_str, 
+            operation);
+    
     return CORRECT_RETURN;
 }
 
@@ -152,7 +183,7 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
  */
 void automatasra_driver(LanguageV2 * language){
     int returned;
-    Token tokn = read_next_token(*language->sra, &returned); // Caràcter llegit del fitxer
+    Token tokn = read_next_token(language->sra, &returned); // Caràcter llegit del fitxer
 
     if (returned == EOTokenList){
         report_error_typed(ERR_EMPTY_FILE, 0, SCANNER_STEP);
@@ -160,19 +191,23 @@ void automatasra_driver(LanguageV2 * language){
     }
 
     int returned_copy = returned;
+    ActionType operation = ACTION_ACCEPT; //Not sure if accept or reject if empty file
 
     while (returned != EOTokenList){ //Anar llegint el fitxer
         
         ActionType operation = update_automatasra(language->sra, tokn, language);
 
-        if (operation != ACTION_REJECT){ // L'autòmata ha arribat a un estat d'acceptació 
-            int a = 0;
-            
-        } else { // L'autòmata ha rebutjat, marcar com a "no mirar més"
-            int a = 0;
+        if (operation == ACTION_REJECT){ // L'autòmata ha rebutjat la llista de tokens
             break;
         }
-        tokn = read_next_token(*language->sra, &returned);
+        tokn = read_next_token(language->sra, &returned); //Last token will be EOF token
+    }
+
+    if (update_automatasra(language->sra, tokn, language) != ACTION_ACCEPT){ //Last update with EOF ($)
+        ParseAction pact;
+        pact.type = ACTION_REJECT;
+        pact.value = -1; //change by global variable
+        write_update_to_output(*language->sra->stack, tokn, pact);
     }
     
     if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case
