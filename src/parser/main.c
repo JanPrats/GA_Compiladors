@@ -106,21 +106,42 @@ int main(int argc, char *argv[]) {
     fprintf(status.ofile, "[INFO] Loaded %d tokens from '%s'\n",
             status.all_tokens.count, status.ifile_name);
 
-    /*
-     * // TODO (module_parser): Load language definition and run SRA.
-     *
-     * Language language;
-     * load_language("language.txt", &language);
-     *
-     * AutomataDFA  dfa;
-     * ParseTable   table;
-     * build_parse_table(&language, &dfa, &table);
-     *
-     * AutomataSRA *sra = initializeSRA(&dfa, &table);
-     * //Ficar *sra al language
-     * automatasra_driver(language);
-     * destroySRA(sra);
-     */
+    /* --- Load language definition from language.txt -------------------- */
+    LanguageV2 language;
+    memset(&language, 0, sizeof(language));
+
+    if (load_language("language.txt", &language) != CORRECT_RETURN) {
+        fprintf(stderr, "Error: could not load language from 'language.txt'\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    fprintf(status.ofile, "[INFO] Language loaded: %d terminals, %d productions\n",
+            language.num_terminals, language.num_productions);
+
+    /* --- Build parse table (action + goto) from loaded language -------- */
+    AutomataDFA  dfa;
+    ParseTable   table;
+    memset(&dfa, 0, sizeof(dfa));
+    memset(&table, 0, sizeof(table));
+
+    if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) {
+        fprintf(stderr, "Error: could not build parse table\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    /* --- Initialize SRA and run parser driver -------------------------- */
+    AutomataSRA *sra = initializeSRA(&dfa, &table);
+    if (!sra) {
+        fprintf(stderr, "Error: could not initialize SRA\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    language.sra = sra;
+    automatasra_driver(&language);
+    destroySRA(sra);
 
     /* --- Close output file --------------------------------------------- */
     if (status.ofile) {
