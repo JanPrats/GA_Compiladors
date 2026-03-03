@@ -113,12 +113,15 @@ Token read_next_token(AutomataSRA* sra, int* returned){ //This input parameter c
     int count = sra->tokens;         // count = [0,1,...,N-1] where count is the position in the List of Tokens that our sra is at.
     sra->tokens = sra->tokens + 1;    // count++ {since we have consumed a token}
 
-    returned = CORRECT_RETURN;      // Unless proved wrong, we are reading fine
+    if (returned)
+        *returned = CORRECT_RETURN;      // Unless proved wrong, we are reading fine
 
     if (count >= status.all_tokens.count){ //If count >= globaltokenlist.count (if globaltokenlist.count == k ; it contains k elements so list[k-1] contains the last element)
-        returned == EOTokenList;
+        if (returned)
+            *returned = EOTokenList;
         Token eof;
-        //eof.lexeme to do
+        strncpy(eof.lexeme, EOF_TOKEN_LEXEME, MAX_TOKEN_NAME-1);
+        eof.lexeme[MAX_TOKEN_NAME-1] = '\0';
         eof.line = sra->tokens;
         eof.cat = CAT_INDIFERENT;
         return eof;
