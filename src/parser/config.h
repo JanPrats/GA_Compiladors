@@ -51,10 +51,6 @@
 #define TAB_CHAR '\t'
 #define END_OF_LINE '\n'
 #define CARRIAGE_RETURN '\r'
-
-/* special token used throughout parser/scanner */
-#define EOF_LEXEME      "$"
-#define EOF_CATEGORY    CAT_INDIFERENT
 #define EPSILON 'ε'
 
 #define EOF_TOKEN_LEXEME '$end'
