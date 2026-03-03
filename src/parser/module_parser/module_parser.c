@@ -2,7 +2,7 @@
 #include <string.h>
 #include "module_parser.h"
 
-AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens* tokens, LanguageV2* language){
+AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table){
     if (dfa == NULL || table == NULL) return NULL;
     AutomataSRA* sra = (AutomataSRA*)malloc(sizeof(AutomataSRA)); //guardem memoria per SRA i afegim tots els elements que necessita
     if (!sra) return NULL;
@@ -18,7 +18,7 @@ AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens
     }
     initialize_stack(sra->stack, *dfa);
     //Set tokens and language pointers
-    sra->tokens = tokens;
+    sra->tokens = 0;
     //sra->language = language;
 
     return sra; //Return pointer to the initialized SRA with all parameters set
@@ -72,14 +72,8 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
     RuleItemType type_tnt; //Is our token a terminal or a non-terminal?
     action = get_next_action(a, token, &type_tnt); //Get next action (and assign T or NT to type_tnt)
     ActionType returned = action.type;
-    if (action.type == ACTION_ACCEPT){
-        if (is_acepting_state(action.value)){
-            return ACTION_ACCEPT;
-        } else {
-            return ACTION_REJECT;
-        }
-    }
-    else if (action.type == ACTION_SHIFT || action.type == ACTION_GOTO)
+
+    if (action.type == ACTION_SHIFT || action.type == ACTION_GOTO)
     {
         RuleItem ruit; //Item to store in Stack (token + type_tnt)
         ruit.token = token;
@@ -109,13 +103,23 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
 }
 
 
-Token read_next_token(ListTokens * tokenlist, int* returned){ //This input parameter could be changed depending on what we want
+Token read_next_token(AutomataSRA sra, int* returned){ //This input parameter could be changed depending on what we want
     //Read the handout first, because I'm writting this from what I can recall, but I may be wrong.
     //If we are given a list in memory it reads the next element in the list
 
     //If we are given a file, we either call a function that reads <lexeme, category> pattern each time we want to read a token
     // Or we put all the file into a list in memory at a time and use the other method.
-    returned = CORRECT_RETURN;
+    
+    int count = sra.tokens;         // count = [0,1,...,N-1] where count is the position in the List of Tokens that our sra is at.
+    sra.tokens = sra.tokens + 1;    // count++ {since we have consumed a token}
+
+    returned = CORRECT_RETURN;      // Unless proved wrong, we are reading fine
+
+    if (count >= status.all_tokens.count){ //If count ==
+        returned == EOTokenList;
+    }
+
+    return status.all_tokens.tokens[count];
 }
 
 int write_update_to_output(Stack stack, Token tokn, ParseAction op){
@@ -148,7 +152,7 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
  */
 void automatasra_driver(LanguageV2 * language){
     int returned;
-    Token tokn = read_next_token(language->sra->tokens, &returned); // Caràcter llegit del fitxer
+    Token tokn = read_next_token(*language->sra, &returned); // Caràcter llegit del fitxer
 
     if (returned == EOTokenList){
         report_error_typed(ERR_EMPTY_FILE, 0, SCANNER_STEP);
@@ -168,7 +172,7 @@ void automatasra_driver(LanguageV2 * language){
             int a = 0;
             break;
         }
-        tokn = read_next_token(language->sra->tokens, &returned);
+        tokn = read_next_token(*language->sra, &returned);
     }
     
     if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case

@@ -62,6 +62,7 @@ static void build_output_filename(const char *input, char *out, size_t out_size)
  * Returns CORRECT_RETURN on success, ERROR_RETURN on failure.
  * ----------------------------------------------------------------------- */
 static int init_parser(const char *input_file) {
+    init_status_prs();
     strncpy(status.ifile_name, input_file, MAX_FILENAME - 1);
     status.ifile_name[MAX_FILENAME - 1] = '\0';
 
@@ -87,6 +88,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(argv[1], HELP_F) == 0) {
+        status.help = true;
         show_help();
         return 0;
     }
@@ -114,8 +116,9 @@ int main(int argc, char *argv[]) {
      * ParseTable   table;
      * build_parse_table(&language, &dfa, &table);
      *
-     * AutomataSRA *sra = initializeSRA(&dfa, &table, &status.all_tokens, &language);
-     * automatasra_driver(sra);
+     * AutomataSRA *sra = initializeSRA(&dfa, &table);
+     * //Ficar *sra al language
+     * automatasra_driver(language);
      * destroySRA(sra);
      */
 

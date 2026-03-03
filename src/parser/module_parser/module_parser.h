@@ -2,11 +2,11 @@
 #define MODULE_PARSER_H
 #include "../config.h"
 
-AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table, ListTokens* tokens, LanguageV2* language);
+AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table);
 
 void destroySRA(AutomataSRA* sra);
 
-ParseAction get_next_action(a, token, lookahead, &type_tnt);
+ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* type);
 
 void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens);
 

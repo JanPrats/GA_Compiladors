@@ -144,7 +144,7 @@ typedef struct Token {
 typedef struct ListTokens {
     Token tokens[MAX_TOKENS];
     int count;
-    int pos;                    // current read head — advances on each shift
+    int pos;                    // current read head — advances on each shift //Well it is also in sra, since we could maybe use more that 1 automata sra at a time in the future
 } ListTokens;
 
 // ------------------Language------------------------------------------------- 
@@ -340,6 +340,8 @@ void buffer_add(BufferAuto *buffer, char c);
 void buffer_append(BufferAuto *dest, const BufferAuto *src);
 
 void buffer_move_append(BufferAuto *dest, BufferAuto *src);
+
+void init_status_prs(void);
 
 //Stack
 

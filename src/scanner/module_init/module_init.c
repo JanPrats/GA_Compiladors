@@ -107,6 +107,7 @@ int init_status_scn(){
     status.line = 1;
     status.first_token_in_line = true;
     status.line_has_tokens = false;
+    status.all_tokens.count == 0;
     return CORRECT_RETURN;
 }
 

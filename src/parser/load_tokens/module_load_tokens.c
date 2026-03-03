@@ -69,7 +69,7 @@ int load_tokens_from_file(const char* filename) {
     while ((c = fgetc(f)) != EOF) {
         if ((char)c != '<') continue;   // advance until next token 
         // Read lexeme
-        if (read_field(f, lexeme, MAX_TOKEN_NAME, ',') < 0) break;
+        if (read_field(f, lexeme, MAX_TOKEN_NAME, ',') < 0) break; //Potser podriem fer un define que es digui "INICI_TOKEN, SEPARADOR_TOKEN, FINAL_TOKEN" per "<"" "," i ">" ?
         // Read category
         if (read_field(f, cat_str, MAX_TOKEN_NAME, '>') < 0) break;
         Category cat = string_to_category(cat_str);

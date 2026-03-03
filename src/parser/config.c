@@ -105,6 +105,19 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
     buffer_clear(src);
 }
 
+void init_status_prs(void){
+    status.oform = RELEASE;
+    status.debug = 0;
+    
+    status.error_file = stdout;
+
+    status.line = 1;
+    status.first_token_in_line = true;
+    status.line_has_tokens = false;
+    status.all_tokens.count == 0;
+    status.all_tokens.pos == 0;
+}
+
 /* Not used yet
 ActionSkip skip_nonchars(char c, char lookahead){
     ActionSkip action = {0};  // Initialize all members to 0
