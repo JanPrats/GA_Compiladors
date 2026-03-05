@@ -62,6 +62,7 @@ static void build_output_filename(const char *input, char *out, size_t out_size)
  * Returns CORRECT_RETURN on success, ERROR_RETURN on failure.
  * ----------------------------------------------------------------------- */
 static int init_parser(const char *input_file) {
+    init_status_prs();
     strncpy(status.ifile_name, input_file, MAX_FILENAME - 1);
     status.ifile_name[MAX_FILENAME - 1] = '\0';
 
@@ -87,6 +88,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(argv[1], HELP_F) == 0) {
+        status.help = true;
         show_help();
         return 0;
     }
@@ -95,48 +97,51 @@ int main(int argc, char *argv[]) {
     if (init_parser(argv[1]) != CORRECT_RETURN) {
         return 1;
     }
-
-    /* --- Detectar extensió i carregar tokens -------------------------------- */
-    char path[MAX_FILENAME], filename[MAX_FILENAME], extension[MAXFILEEXT];
-    split_path(status.ifile_name, path, filename, extension);
-
-    if (strcmp(extension, "cscn") == 0) {
-        // Entrada directa: fitxer de tokens del scanner
-        int ret = load_tokens_from_file(status.ifile_name);
-        if (ret != CORRECT_RETURN) {
-            fprintf(stderr, "Error: failed to load tokens from '%s'\n", status.ifile_name);
-            if (status.ifile)  { fclose(status.ifile);  status.ifile  = NULL; }
-            if (status.ofile)  { fclose(status.ofile);  status.ofile  = NULL; }
-            return 1;
-        }
-    } else if (strcmp(extension, "c") == 0) {
-        // Entrada .c: primer executem el scanner, després el parser llegeix els tokens de memòria
-        AutomataList automata_list;
-        init_automata(&automata_list);
-        automata_driver(automata_list.automatas, automata_list.num_automata);
-        // status.all_tokens ja està ple perquè el scanner usa add_token_to_list()
-    } else {
-        fprintf(stderr, "Error: unsupported file extension '.%s'. Use .cscn or .c\n", extension);
+    /* --- Carregar tokens (detecta extensió i delega al mòdul) -------------- */
+    if (load_tokens() != CORRECT_RETURN) {
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
     fprintf(status.ofile, "[INFO] Loaded %d tokens from '%s'\n",
             status.all_tokens.count, status.ifile_name);
 
-    /*
-     * // TODO (module_parser): Load language definition and run SRA.
-     *
-     * Language language;
-     * load_language("language.txt", &language);
-     *
-     * AutomataDFA  dfa;
-     * ParseTable   table;
-     * build_parse_table(&language, &dfa, &table);
-     *
-     * AutomataSRA *sra = initializeSRA(&dfa, &table, &status.all_tokens, &language);
-     * automatasra_driver(sra);
-     * destroySRA(sra);
-     */
+    /* --- Load language definition from language.txt -------------------- */
+    LanguageV2 language;
+    memset(&language, 0, sizeof(language));
+
+    if (load_language("language.txt", &language) != CORRECT_RETURN) {
+        fprintf(stderr, "Error: could not load language from 'language.txt'\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    fprintf(status.ofile, "[INFO] Language loaded: %d terminals, %d productions\n",
+            language.num_terminals, language.num_productions);
+
+    /* --- Build parse table (action + goto) from loaded language -------- */
+    AutomataDFA  dfa;
+    ParseTable   table;
+    memset(&dfa, 0, sizeof(dfa));
+    memset(&table, 0, sizeof(table));
+
+    if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) {
+        fprintf(stderr, "Error: could not build parse table\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    /* --- Initialize SRA and run parser driver -------------------------- */
+    AutomataSRA *sra = initializeSRA(&dfa, &table);
+    if (!sra) {
+        fprintf(stderr, "Error: could not initialize SRA\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
+
+    language.sra = sra;
+    automatasra_driver(&language);
+    destroySRA(sra);
 
     /* --- Close output file --------------------------------------------- */
     if (status.ofile) {

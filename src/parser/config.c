@@ -105,6 +105,19 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
     buffer_clear(src);
 }
 
+void init_status_prs(void){
+    status.oform = RELEASE;
+    status.debug = 0;
+    
+    status.error_file = stdout;
+
+    status.line = 1;
+    status.first_token_in_line = true;
+    status.line_has_tokens = false;
+    status.all_tokens.count == 0;
+    status.all_tokens.pos == 0;
+}
+
 /* Not used yet
 ActionSkip skip_nonchars(char c, char lookahead){
     ActionSkip action = {0};  // Initialize all members to 0
@@ -288,4 +301,80 @@ FILE* set_output_test_file(const char* filename) {
     }
     fflush(ofile);
     return ofile;
+}
+
+/* -----------------------------------------------------------------------
+ * stack_to_string
+ * Reads the stack from bottom (index 0) to top and concatenates the
+ * lexemes of each RuleItem token, separated by spaces.
+ * Result is written into `output` (size `output_size`).
+ * ----------------------------------------------------------------------- */
+void stack_to_string(const Stack *stack, char *output, size_t output_size) {
+    if (stack == NULL || output == NULL || output_size == 0) {
+        if (output && output_size > 0) output[0] = '\0';
+        return;
+    }
+
+    output[0] = '\0';
+    size_t current_len = 0;
+
+    // Read from bottom (0) to top
+    for (int i = 0; i <= stack->top; i++) {
+        const char *lexeme = stack->elements[i].symbol.token.lexeme;
+        
+        // Add space if not the first element
+        if (i > 0 && current_len < output_size - 1) {
+            output[current_len++] = ' ';
+            output[current_len] = '\0';
+        }
+        
+        // Append lexeme to output
+        int lexeme_len = strlen(lexeme);
+        if (current_len + lexeme_len < output_size - 1) {
+            strncpy(&output[current_len], lexeme, output_size - current_len - 1);
+            current_len += lexeme_len;
+            output[current_len] = '\0';
+        } else {
+            // Buffer too small, truncate
+            break;
+        }
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * action_to_string
+ * Converts a ParseAction to its string representation:
+ * - SHIFT n  -> "Sn"
+ * - REDUCE n -> "Rn"
+ * - ACCEPT   -> "Accept"
+ * - REJECT   -> "Reject"
+ * - ERROR    -> "Error"
+ * Result is written into `output` (size `output_size`).
+ * ----------------------------------------------------------------------- */
+void action_to_string(ParseAction action, char *output, size_t output_size) {
+    if (output == NULL || output_size == 0) return;
+
+    switch (action.type) {
+        case ACTION_SHIFT:
+            snprintf(output, output_size, "S%d", action.value);
+            break;
+        case ACTION_REDUCE:
+            snprintf(output, output_size, "R%d", action.value);
+            break;
+        case ACTION_ACCEPT:
+            snprintf(output, output_size, "Accept");
+            break;
+        case ACTION_REJECT:
+            snprintf(output, output_size, "Reject");
+            break;
+        case ACTION_ERROR:
+            snprintf(output, output_size, "Error");
+            break;
+        case ACTION_GOTO:
+            snprintf(output, output_size, "G%d", action.value);
+            break;
+        default:
+            snprintf(output, output_size, "Unknown");
+            break;
+    }
 }

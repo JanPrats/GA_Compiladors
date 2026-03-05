@@ -53,6 +53,8 @@
 #define CARRIAGE_RETURN '\r'
 #define EPSILON 'ε'
 
+#define EOF_TOKEN_LEXEME '$end'
+
 
 // -----------------SIZE LIMITS------------------------------------------------ 
 #define MAX_FILENAME 512        // Max File length (in bits I think) for compiler variables
@@ -144,7 +146,7 @@ typedef struct Token {
 typedef struct ListTokens {
     Token tokens[MAX_TOKENS];
     int count;
-    int pos;                    // current read head — advances on each shift
+    int pos;                    // current read head — advances on each shift //Well it is also in sra, since we could maybe use more that 1 automata sra at a time in the future
 } ListTokens;
 
 // ------------------Language------------------------------------------------- 
@@ -341,6 +343,8 @@ void buffer_append(BufferAuto *dest, const BufferAuto *src);
 
 void buffer_move_append(BufferAuto *dest, BufferAuto *src);
 
+void init_status_prs(void);
+
 //Stack
 
 void initialize_stack(Stack *stack, AutomataDFA dfa); //Before using a stack initialize it
@@ -354,5 +358,10 @@ StackElement peek_stack(const Stack *stack); //Just see the top element, but not
 bool is_empty_stack(const Stack *stack);
 
 bool is_full_stack(const Stack *stack);
+
+// Helper functions for parser output
+void stack_to_string(const Stack *stack, char *output, size_t output_size);
+
+void action_to_string(ParseAction action, char *output, size_t output_size);
 
 #endif // CONFIG_FILES_H
