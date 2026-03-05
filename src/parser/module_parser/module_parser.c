@@ -55,6 +55,56 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
     return this variable for both cases
     */
     
+    AutomataSRA* sra = language->sra;
+    int current_state = sra->dfa->current_state;
+    ParseAction result;
+    result.type  = ACTION_ERROR;
+    result.value = 0;
+
+    // ---- Search terminals ------------------------------------------------
+    for (int i = 0; i < language->num_terminals; i++) {
+        RuleItem vocab = language->terminals[i];
+        // vocab.token.cat == CAT_INDIFERENT  -->  match by lexeme
+        // otherwise                          -->  match by category
+        int match = 0;
+        if (vocab.token.cat == CAT_INDIFERENT) {
+            match = (strcmp(token.lexeme, vocab.token.lexeme) == 0);
+        } else {
+            match = (token.cat == vocab.token.cat);
+        }
+
+        if (match) {
+            *type = TERMINAL_SYMBOL;
+            int col = vocab.column;
+            // Look up in the ACTION table
+            ParseAction cell = sra->table.cells[current_state][col];
+            return cell;   // already has type + value populated when the table was built
+        }
+    }
+
+    // ---- Search non-terminals -------------------------------------------
+    for (int i = 0; i < language->num_nonterminals; i++) {
+        RuleItem vocab = language->nonterminals[i][0]; // first slot holds the NT descriptor
+        int match = 0;
+        if (vocab.token.cat == CAT_INDIFERENT) {
+            match = (strcmp(token.lexeme, vocab.token.lexeme) == 0);
+        } else {
+            match = (token.cat == vocab.token.cat);
+        }
+
+        if (match) {
+            *type = NON_TERMINAL_SYMBOL;
+            int col = vocab.column;
+            // Look up in the GOTO table (stored in the DFA's transition matrix)
+            int next_state = sra->dfa->matrix.states_rows[current_state].new_state[col];
+            result.type  = ACTION_GOTO;
+            result.value = next_state;
+            return result;
+        }
+    }
+
+    // No match found: return error
+    return result;
 }
 
 void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
@@ -65,6 +115,19 @@ void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
     Adds lhs symbol(s) to Token lhs* {Since it is a pointer it should change the original array}
     adds lhs_length to num_tokens to know the lhs lenght outside this function
     */
+    
+    // Pop rhs_length elements from the stack (one per symbol on the RHS)
+    for (int i = 0; i < rule->rhs_length; i++) {
+        pop_stack(stack);
+    }
+
+    // Fill the output lhs array with the tokens from the rule's LHS RuleItems
+    for (int i = 0; i < rule->lhs_length; i++) {
+        lhs[i] = rule->lhs[i].token;  // copy the Token part of each LHS RuleItem
+    }
+
+    // Tell the caller how many LHS tokens were produced
+    *num_tokens = rule->lhs_length;
 }
 
 ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language) {
