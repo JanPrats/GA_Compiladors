@@ -21,7 +21,7 @@
  *   1 - Failure (missing argument, file not found, token load error)
  *
  * Team: GA
- * Contributor/s:
+ * Contributor/s: Gorka Hernández
  * -----------------------------------------------------------------------------
  */
 
@@ -97,8 +97,9 @@ int main(int argc, char *argv[]) {
     if (init_parser(argv[1]) != CORRECT_RETURN) {
         return 1;
     }
-    /* --- Carregar tokens (detecta extensió i delega al mòdul) -------------- */
-    if (load_tokens() != CORRECT_RETURN) {
+    /* --- Load tokens from .cscn file ---------------------------------- */
+    if (load_tokens_from_file(status.ifile_name) != CORRECT_RETURN) {
+        fprintf(stderr, "Error: could not load tokens from '%s'\n", status.ifile_name);
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
