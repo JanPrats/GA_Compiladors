@@ -207,6 +207,13 @@ bool is_full_stack(const Stack *stack) {
     return stack->top >= MAX_STACK_SIZE - 1;
 }
 
+void destroy_stack(Stack* stack) {
+    if (stack == NULL) return;
+    if (stack->elements != NULL) {   // or whatever your internal array is called
+        free(stack->elements);
+    }
+    stack->top = -1;
+}
 
 
 //Functions that were here in the template

@@ -12,7 +12,7 @@ void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens);
 
 ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language);
 
-Token read_next_token(ListTokens * tokenlist, int* returned);
+Token read_next_token(AutomataSRA* sra, int* returned);
 
 int write_update_to_output(Stack stack, Token tokn, ParseAction op);
 

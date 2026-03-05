@@ -179,8 +179,8 @@ typedef struct RuleV2 {
 typedef struct LanguageV2 { // Language without Goto
     RuleItem terminals[MAX_ALPHABET_SIZE];
     int  num_terminals;
-    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME]; //Podriem borrar això crec
-    int  num_nonterminals; //I aixo 
+    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME]; //Podriem borrar el segon []
+    int  num_nonterminals;
     RuleV2 productions[MAX_PRODUCTIONS];
     int  num_productions;
     char start_symbol[MAX_TOKEN_NAME];
@@ -358,6 +358,8 @@ StackElement peek_stack(const Stack *stack); //Just see the top element, but not
 bool is_empty_stack(const Stack *stack);
 
 bool is_full_stack(const Stack *stack);
+
+void destroy_stack(Stack* stack);
 
 // Helper functions for parser output
 void stack_to_string(const Stack *stack, char *output, size_t output_size);

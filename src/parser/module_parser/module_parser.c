@@ -29,7 +29,8 @@ void destroySRA(AutomataSRA* sra){
     if (sra == NULL) return;
 
     if (sra->stack != NULL){
-        free(sra->stack);
+        //destroy_stack(sra->stack);  // free internal stack contents first //Uncomment when everything works
+        free(sra->stack);           // then free the Stack struct itself
         sra->stack = NULL;
     }
 
@@ -131,9 +132,9 @@ void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
 }
 
 ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language) {
-    ParseAction action; // [SHIFT, NEXT_TOKEN] or [GOTO, NEXT_TOKEN] or [REDUCE, RULEID]
+    ParseAction action; // [SHIFT, NEXT_STATE] or [GOTO, NEXT_STATE] or [REDUCE, RULEID]
     RuleItemType type_tnt; //Is our token a terminal or a non-terminal?
-    action = get_next_action(a, token, &type_tnt); //Get next action (and assign T or NT to type_tnt)
+    action = get_next_action(language, token, &type_tnt); //Get next action (and assign T or NT to type_tnt)
     ActionType returned = action.type;
 
     if (action.type == ACTION_SHIFT || action.type == ACTION_GOTO)
@@ -150,11 +151,19 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
         Token lhs[MAX_RHS_LENGTH];
         int num_tokens;
         
-        reduce_rule(a->stack, &rule2r, &lhs, &num_tokens); // pop following rhs
+        reduce_rule(a->stack, &rule2r, lhs, &num_tokens); // pop following rhs
 
-        for (int i = 0; i<=num_tokens; i++){ //Not sure if i<=num_tokens or i<num_tokens | MUST NOT CONSUME LOOKAHEAD
+        // include the lookahead/original token after the reduced lhs symbols
+        // this ensures the token is processed as part of the recursive calls
+        if (num_tokens < MAX_RHS_LENGTH) {
+            lhs[num_tokens] = token;
+            num_tokens++;
+        }
+
+        // process each token produced by the reduction (including the original token)
+        for (int i = 0; i < num_tokens; i++) {
             returned = update_automatasra(a, lhs[i], language);
-            if (returned == ACTION_REJECT || returned == ACTION_ERROR){
+            if (returned == ACTION_REJECT || returned == ACTION_ERROR) {
                 return returned;
             }
         }
@@ -184,7 +193,7 @@ Token read_next_token(AutomataSRA* sra, int* returned){ //This input parameter c
             *returned = EOTokenList;
         Token eof;
         strncpy(eof.lexeme, EOF_TOKEN_LEXEME, MAX_TOKEN_NAME-1);
-        eof.lexeme[MAX_TOKEN_NAME-1] = '\0';
+        eof.lexeme[MAX_TOKEN_NAME-1] = '\0'; // we could also use EOF_TOKEN_LEXEME
         eof.line = sra->tokens;
         eof.cat = CAT_INDIFERENT;
         return eof;
@@ -213,15 +222,20 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     
     // Add all tokens read so far up to the current token position
     for (int i = 0; i < status.all_tokens.count && i < tokn.line; i++) {
-        if (i > 0) strcat(input, " ");
-        strcat(input, status.all_tokens.tokens[i].lexeme);
+        if (i > 0 && strlen(input) + 1 < MAX_INPUT_LENGTH - 1)
+            strcat(input, " ");
+        if (strlen(input) + strlen(status.all_tokens.tokens[i].lexeme) < MAX_INPUT_LENGTH - 1)
+            strcat(input, status.all_tokens.tokens[i].lexeme);
     }
     // Add the marker for current position
     if (tokn.line < status.all_tokens.count) {
-        strcat(input, " | ");
-        strcat(input, tokn.lexeme);
+        if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
+            strcat(input, " | ");
+        if (strlen(input) + strlen(tokn.lexeme) < MAX_INPUT_LENGTH - 1)
+            strcat(input, tokn.lexeme);
     } else if (tokn.line == status.all_tokens.count) {
-        strcat(input, " | ");
+        if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
+            strcat(input, " | ");
     }
     
     // Get stack representation (from 0 to top)

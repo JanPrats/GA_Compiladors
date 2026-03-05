@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     LanguageV2 language;
     memset(&language, 0, sizeof(language));
 
-    if (load_language("language.txt", &language) != CORRECT_RETURN) {
+    if (load_language("language.txt", &language) != CORRECT_RETURN) { //To be done
         fprintf(stderr, "Error: could not load language from 'language.txt'\n");
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     memset(&dfa, 0, sizeof(dfa));
     memset(&table, 0, sizeof(table));
 
-    if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) {
+    if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) { //To be done
         fprintf(stderr, "Error: could not build parse table\n");
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
