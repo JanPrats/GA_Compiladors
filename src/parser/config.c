@@ -23,9 +23,7 @@
  */
 
 #include "./main.h"
-
 #include "config.h"
-#include "count.h"
 
 Status status;  // ← THIS allocates the memory (only once)
 
@@ -57,7 +55,7 @@ Category string_to_category(const char* str) {
 
 void add_token_to_list(char* lexeme, Category cat) {
     if (status.all_tokens.count >= MAX_TOKENS) {
-        report_warning("Maximum token count reached, token discarded", status.line, SCANNER_STEP);
+        fprintf(stderr, "WARNING: Maximum token count reached, token discarded\n");
         return;
     }
 
@@ -72,7 +70,6 @@ void add_token_to_list(char* lexeme, Category cat) {
     status.all_tokens.count++;
 }
 
-
 void buffer_clear(BufferAuto *buffer) {
     buffer->len = 0;
     buffer->lexeme[0] = '\0';
@@ -83,7 +80,7 @@ void buffer_add(BufferAuto *buffer, char c) {
         buffer->lexeme[buffer->len++] = c;
         buffer->lexeme[buffer->len] = '\0';
     } else {
-        report_warning("Token too long, character discarded", status.line, SCANNER_STEP);
+        fprintf(stderr, "WARNING: Token too long, character discarded\n");
     }
 }
 
@@ -108,14 +105,19 @@ void buffer_move_append(BufferAuto *dest, BufferAuto *src) { //Does "delete" it,
 void init_status_prs(void){
     status.oform = RELEASE;
     status.debug = 0;
+    status.help = false;
     
+    status.ifile_name[0] = '\0';
+    status.ofile_name[0] = '\0';
+    status.ifile = NULL;
+    status.ofile = NULL;
     status.error_file = stdout;
 
     status.line = 1;
     status.first_token_in_line = true;
     status.line_has_tokens = false;
-    status.all_tokens.count == 0;
-    status.all_tokens.pos == 0;
+    status.all_tokens.count = 0;
+    status.all_tokens.pos = 0;
 }
 
 /* Not used yet
