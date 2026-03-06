@@ -86,35 +86,35 @@ int load_tokens_from_file(const char* filename) {
  * ------------------------------------------------------------------------- */
 static int load_tokens_from_scan(void) {
     // Open the .c source file for the scanner to read
-    status.ifile = fopen(status.ifile_name, "r");
-    if (!status.ifile) {
-        fprintf(stderr, "File not found: %s\n", status.ifile_name);
-        return ERROR_RETURN;
-    }
+    // status.ifile = fopen(status.ifile_name, "r");
+    // if (!status.ifile) {
+    //     fprintf(stderr, "File not found: %s\n", status.ifile_name);
+    //     return ERROR_RETURN;
+    // }
 
-    FILE* scanner_out = fopen("/dev/null", "w");
-    if (!scanner_out) scanner_out = status.ofile; 
+    // FILE* scanner_out = fopen("/dev/null", "w");
+    // if (!scanner_out) scanner_out = status.ofile; 
 
-    FILE* saved_ofile = status.ofile;
-    status.ofile = scanner_out;
+    // FILE* saved_ofile = status.ofile;
+    // status.ofile = scanner_out;
 
-    // Reset scanner-specific status fields
-    status.line = 1;
-    status.first_token_in_line = true;
-    status.line_has_tokens = false;
-    status.all_tokens.count = 0;
+    // // Reset scanner-specific status fields
+    // status.line = 1;
+    // status.first_token_in_line = true;
+    // status.line_has_tokens = false;
+    // status.all_tokens.count = 0;
 
-    // Run the scanner
-    AutomataList automata_list;
-    init_automata(&automata_list);
-    automata_driver(automata_list.automatas, automata_list.num_automata);
+    // // Run the scanner
+    // AutomataList automata_list;
+    // init_automata(&automata_list);
+    // automata_driver(automata_list.automatas, automata_list.num_automata);
 
-    // Restore parser state
-    fclose(status.ifile);
-    status.ifile = NULL;
-    if (scanner_out != saved_ofile) fclose(scanner_out);
-    status.ofile = saved_ofile;
-    return CORRECT_RETURN;
+    // // Restore parser state
+    // fclose(status.ifile);
+    // status.ifile = NULL;
+    // if (scanner_out != saved_ofile) fclose(scanner_out);
+    // status.ofile = saved_ofile;
+    // return CORRECT_RETURN;
 }
 
 /* -------------------------------------------------------------------------

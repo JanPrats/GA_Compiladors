@@ -2,39 +2,29 @@
 #include <string.h>
 #include "module_parser.h"
 
-AutomataSRA* initializeSRA(AutomataDFA* dfa, const ParseTable* table){
-    if (dfa == NULL || table == NULL) return NULL;
-    AutomataSRA* sra = (AutomataSRA*)malloc(sizeof(AutomataSRA)); //guardem memoria per SRA i afegim tots els elements que necessita
-    if (!sra) return NULL;
-    //Set DFA pointer
-    sra->dfa = dfa;
-    //Copy parse table by value
-    sra->table = *table;
-    //Allocate and initialize stack
-    sra->stack = (Stack*)malloc(sizeof(Stack));
-    if (sra->stack == NULL){
-        free(sra);
-        return NULL;
-    }
-    initialize_stack(sra->stack, *dfa);
-    //Set tokens and language pointers
-    sra->tokens = 0;
-    //sra->language = language;
-
-    return sra; //Return pointer to the initialized SRA with all parameters set
+void initialize_SRA_DFA_stack(LanguageV2* language) {
+    language->sra->dfa->start_state   = 0;
+    language->sra->dfa->current_state = 0;
+    initialize_stack(language->sra->stack, *language->sra->dfa);
 }
 
 //Free resources owned by an AutomataSRA allocated with initializeSRA. Free the stack and the SRA itself, but not the DFA, tokens or language.
-void destroySRA(AutomataSRA* sra){
-    if (sra == NULL) return;
+void destroy_language(LanguageV2* language) {
+    if (language == NULL) return;
 
-    if (sra->stack != NULL){
-        //destroy_stack(sra->stack);  // free internal stack contents first //Uncomment when everything works
-        free(sra->stack);           // then free the Stack struct itself
-        sra->stack = NULL;
+    if (language->sra != NULL) {
+        if (language->sra->dfa != NULL) {
+            free(language->sra->dfa);
+            language->sra->dfa = NULL;
+        }
+        if (language->sra->stack != NULL) {
+            destroy_stack(language->sra->stack);
+            free(language->sra->stack);
+            language->sra->stack = NULL;
+        }
+        free(language->sra);
+        language->sra = NULL;
     }
-
-    free(sra);
 }
 
 ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* type){ //example: input Token = <"9", CAT_NUMBER>
@@ -56,8 +46,8 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
     return this variable for both cases
     */
     
-    AutomataSRA* sra = language->sra;
-    int current_state = sra->dfa->current_state;
+    
+    int current_state = language->sra->dfa->current_state;
     ParseAction result;
     result.type  = ACTION_ERROR;
     result.value = 0;
@@ -78,10 +68,18 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             *type = TERMINAL_SYMBOL;
             int col = vocab.column;
             // Look up in the ACTION table
-            ParseAction cell = sra->table.cells[current_state][col]; // err, Reject_Error {} Check if languange.txt transforms err from table into ERROR or REJECT
+            ParseAction cell = language->sra->table.cells[current_state][col]; // err, Reject_Error {} Check if languange.txt transforms err from table into ERROR or REJECT
             return cell;   // already has type + value populated when the table was built
         }
     }
+    // fprintf(status.ofile, "DEBUG: no terminal match for lexeme='%s' cat=%d, state=%d\n", 
+    // token.lexeme, token.cat, current_state);
+    // for (int i = 0; i < language->num_terminals; i++) {
+    //     fprintf(status.ofile, "  vocab[%d]: lexeme='%s' cat=%d col=%d\n",
+    //         i, language->terminals[i].token.lexeme, 
+    //         language->terminals[i].token.cat,
+    //         language->terminals[i].column);
+    // }
 
     // ---- Search non-terminals -------------------------------------------
     for (int i = 0; i < language->num_nonterminals; i++) {
@@ -97,7 +95,7 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             *type = NON_TERMINAL_SYMBOL;
             int col = vocab.column;
             // Look up in the GOTO table (stored in the DFA's transition matrix)
-            int next_state = sra->dfa->matrix.states_rows[current_state].new_state[col];
+            int next_state = language->sra->dfa->matrix.states_rows[current_state].new_state[col];
             result.type  = ACTION_GOTO; //since we are looking at the goto table
             result.value = next_state;
             return result;
@@ -152,28 +150,43 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
     }
     else if (action.type == ACTION_REDUCE)
     {
-        RuleV2 rule2r = language->productions[action.value];
+        RuleV2 rule2r;
+        int found = 0;
+        for (int i = 0; i < language->num_productions; i++) {
+            if (language->productions[i].rule_id == action.value) {
+                rule2r = language->productions[i];
+                found = 1;
+                break;
+            }
+        }
         Token lhs[MAX_RHS_LENGTH];
         int num_tokens;
         
         reduce_rule(a->stack, &rule2r, lhs, &num_tokens, language); // pop following rhs
-
+        // printf("REDUCE rule %d, LHS='%s', current_state after reduce=%d, token='%s'\n",
+        //     action.value,
+        //     lhs[0].lexeme,
+        //     a->dfa->current_state,
+        //     token.lexeme);
         // include the lookahead/original token after the reduced lhs symbols
         // this ensures the token is processed as part of the recursive calls 
-        if (num_tokens < MAX_RHS_LENGTH) {
-            lhs[num_tokens] = token;
-            num_tokens++;
-        }
+        // if (num_tokens < MAX_RHS_LENGTH) {
+        //     lhs[num_tokens] = token;
+        //     num_tokens++;
+        // }
 
         // process each token produced by the reduction (including the original token)
+        token.line = a->tokens; 
+        write_update_to_output(*language->sra->stack, token, action);
         for (int i = 0; i < num_tokens; i++) {
             returned = update_automatasra(a, lhs[i], language);
             if (returned == ACTION_REJECT || returned == ACTION_ERROR) {
-                token.line = a->tokens;
-                write_update_to_output(*language->sra->stack, token, action); 
                 return returned;
             }
         }
+
+        // Now re-process the original token in the new state (tail call, not recursion on lhs)
+        return update_automatasra(a, token, language);
     }
     
     token.line = a->tokens; //since we won't be using token.line anymore we substitute it by the position on the list where we found this token (can be used to determine where to puta | or · in the output <input> column. F.example { 9 * | ( 5 + 2 )} )
@@ -234,16 +247,16 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
         if (strlen(input) + strlen(status.all_tokens.tokens[i].lexeme) < MAX_INPUT_LENGTH - 1)
             strcat(input, status.all_tokens.tokens[i].lexeme);
     }
-    // Add the marker for current position
-    if (tokn.line < status.all_tokens.count) {
-        if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
-            strcat(input, " | ");
-        if (strlen(input) + strlen(tokn.lexeme) < MAX_INPUT_LENGTH - 1)
-            strcat(input, tokn.lexeme);
-    } else if (tokn.line == status.all_tokens.count) {
-        if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
-            strcat(input, " | ");
-    }
+    // // Add the marker for current position
+    // if (tokn.line < status.all_tokens.count) {
+    //     if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
+    //         strcat(input, " | ");
+    //     if (strlen(input) + strlen(tokn.lexeme) < MAX_INPUT_LENGTH - 1)
+    //         strcat(input, tokn.lexeme);
+    // } else if (tokn.line == status.all_tokens.count) {
+    //     if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
+    //         strcat(input, " | ");
+    // }
     
     // Get stack representation (from 0 to top)
     char stack_str[MAX_INPUT_LENGTH];
@@ -254,10 +267,11 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     action_to_string(op, operation, sizeof(operation));
     
     // Write the formatted row to output file
-    // Format: | State | Input | Stack | Operation |
-    fprintf(status.ofile, "| %5d | %-8s | %-10s | %-20s |\n", 
+    // Format: | State | Input | Read Token | Stack | Action |
+    fprintf(status.ofile, "| %5d | %-20s | %-10s | %-20s | %-10s |\n", 
             state, 
             input, 
+            tokn.lexeme,
             stack_str, 
             operation);
     
@@ -276,17 +290,25 @@ void automatasra_driver(LanguageV2 * language){
         //Error
         return;
     }
-
     // int returned_copy = returned;
     ActionType operation = ACTION_ACCEPT; //Not sure if accept or reject if empty file
 
     while (returned != EOTokenList){ //Anar llegint el fitxer
-        
+        // fprintf(status.ofile, "We have reached this point 2\n");
         ActionType operation = update_automatasra(language->sra, tokn, language);
+        // ParseAction pact;
+        // pact.type = operation;
+        // pact.value = -1; //change by global variable
+        // fprintf(status.ofile, "We have reached this point 3\n");
+        // char oper[MAX_OPERATION_NAME];
+        // action_to_string(pact, oper, sizeof(operation));
+        // fprintf(status.ofile, "action: %s\n", oper);
+        // fprintf(status.ofile, "Ehmm %d\n", operation == ACTION_REJECT);
 
-        if (returned == ACTION_REJECT || returned == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
+        if (operation == ACTION_REJECT || operation == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
             break;
         }
+        // fprintf(status.ofile, "We have reached this point %d", language->sra->tokens);
         tokn = read_next_token(language->sra, &returned); //Last token will be EOF token
     }
 

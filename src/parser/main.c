@@ -81,7 +81,7 @@ static int init_parser(const char *input_file) {
  * main
  * ----------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
-    const char *language_file = "language.txt";
+    const char *language_file = "src/parser/language.txt";
 
     /* --- Argument check ------------------------------------------------ */
     if (argc < 2) { // Check if there are enough args
@@ -104,11 +104,12 @@ int main(int argc, char *argv[]) {
     if (argc == 3) {
         language_file = argv[2];
     }
-
+    //fprintf(stdout, "We have reached this point");
     /* --- Initialise: open output file ---------------------------------- */
     if (init_parser(argv[1]) != CORRECT_RETURN) {
         return 1;
     }
+    
     /* --- Load tokens from .cscn file ---------------------------------- */
     if (load_tokens_from_file(status.ifile_name) != CORRECT_RETURN) {
         fprintf(stderr, "Error: could not load tokens from '%s'\n", status.ifile_name);
@@ -120,17 +121,20 @@ int main(int argc, char *argv[]) {
             status.all_tokens.count, status.ifile_name);
 
     /* --- Load language definition from selected file -------------------- */
-    LanguageV2 language;
-    memset(&language, 0, sizeof(language));
+    LanguageV2* language = (LanguageV2*)calloc(1, sizeof(LanguageV2));
+    if (!language) {
+        fprintf(stderr, "Error: could not allocate language\n");
+        return 1;
+    }
 
-    if (load_language(language_file, &language) != CORRECT_RETURN) { //To be done
+    if (load_language(language_file, language) != CORRECT_RETURN) { //To be done
         fprintf(stderr, "Error: could not load language from '%s'\n", language_file);
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
     fprintf(status.ofile, "[INFO] Language loaded from '%s': %d terminals, %d productions\n",
-            language_file, language.num_terminals, language.num_productions);
+            language_file, language->num_terminals, language->num_productions);
 
     /* --- Build parse table (action + goto) from loaded language -------- */
     // AutomataDFA  dfa;
@@ -138,23 +142,28 @@ int main(int argc, char *argv[]) {
     // memset(&dfa, 0, sizeof(dfa));
     // memset(&table, 0, sizeof(table));
 
-    // if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) { //To be done
+    // if (build_parse_table(language, &dfa, &table) != CORRECT_RETURN) { //To be done
     //     fprintf(stderr, "Error: could not build parse table\n");
     //     if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
     //     return 1;
     // }
 
     /* --- Initialize SRA and run parser driver -------------------------- */
-    AutomataSRA *sra = initializeSRA(language.sra->dfa, &language.sra->table); //Revisar si solo necesita language de input
-    if (!sra) {
-        fprintf(stderr, "Error: could not initialize SRA\n");
-        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
-        return 1;
-    }
-
-    language.sra = sra;
-    automatasra_driver(&language);
-    destroySRA(sra); //revisar
+    initialize_SRA_DFA_stack(language); //Revisar si solo necesita language de input
+    // We do not fill:
+    /*
+    
+    
+    */
+    
+    // Add header to output file
+    fprintf(status.ofile, "+-------+-------+-------+-------+-------+\n");
+    fprintf(status.ofile, "| State | Input  | Read Token | Stack  | Action |\n");
+    fprintf(status.ofile, "+-------+-------+-------+-------+-------+\n");
+    
+    automatasra_driver(language);
+    destroy_language(language); //revisar
+    free(language);
 
     /* --- Close output file --------------------------------------------- */
     if (status.ofile) {

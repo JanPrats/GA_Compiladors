@@ -32,15 +32,15 @@ Status status;  // ← THIS allocates the memory (only once)
 //Our general functions
 const char* category_to_string(Category cat) {
     switch (cat) {
-        case CAT_NUMBER:        return "NUMBER";
-        case CAT_IDENTIFIER:    return "IDENTIFIER";
-        case CAT_KEYWORD:       return "KEYWORD";
-        case CAT_TYPE:          return "TYPE";
-        case CAT_LITERAL:       return "LITERAL";
-        case CAT_OPERATOR:      return "OPERATOR";
-        case CAT_SPECIALCHAR:   return "SPECIALCHAR";
-        case CAT_NONRECOGNIZED: return "NONRECOGNIZED";
-        default:                return "UNKNOWN";
+        case CAT_NUMBER:        return "CAT_NUMBER";
+        case CAT_IDENTIFIER:    return "CAT_IDENTIFIER";
+        case CAT_KEYWORD:       return "CAT_KEYWORD";
+        case CAT_TYPE:          return "CAT_TYPE";
+        case CAT_LITERAL:       return "CAT_LITERAL";
+        case CAT_OPERATOR:      return "CAT_OPERATOR";
+        case CAT_SPECIALCHAR:   return "CAT_SPECIALCHAR";
+        case CAT_NONRECOGNIZED: return "CAT_NONRECOGNIZED";
+        default:                return "CAT_UNKNOWN";
     }
 }
 

@@ -1,31 +1,33 @@
 # =============================================================================
-# GRAMMAR DEFINITION AND PRODUCTION RULES
-# Format compatible with load_language() function
+# SECTION 1: GRAMMAR DEFINITION AND PRODUCTION RULES
 # =============================================================================
+# IMPORTANT
+# We transform (lexeme, action/goto column) from language.txt into a ( TERMINAL, (<lexeme, category>) , action/goto column ) inside RuleItem : {RuleItemType type; Token token; int column;}
+# CAT_TERMINAL elements have category string_to_category(lexeme), all the others have CAT_INDIFERENT category (category is added in the code, not in this file)
+# for PRODUCTION RULES we search each symbol from both hs (rhs and lhs) to find one that is in the vocabulary defined in GRAMMAR. Then we add them to the RulesV2 structure
 
-START_SYMBOL: S
+[GRAMMAR]
+START_SYMBOL: "S"
+NON_TERMINALS: ("S",0) ("E",1) ("T",2) ("F",3)
+TERMINALS: ("+",1) ("*",2) ("(",3) (")",4) ("$",0) ("CAT_NUMBER",5)
 
-NON_TERMINALS: S E T F
-
-TERMINALS: $ + * ( ) num
-
-PRODUCTIONS:
-1: S -> E
-2: E -> E + T
-3: E -> T
-4: T -> T * F
-5: T -> F
-6: F -> ( E )
-7: F -> num
+[PRODUCTIONS]
+1 | S -> E
+2 | E -> E + T
+3 | E -> T
+4 | T -> T * F
+5 | T -> F
+6 | F -> ( E )
+7 | F -> CAT_NUMBER
 
 # =============================================================================
-# SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE (Reference only)
+# SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE
 # =============================================================================
-# Format: state | terminal | action
+# Columns correspond to TERMINALS in this order: $ + * ( ) CAT_NUMBER
+# (column indices match those declared in TERMINALS and CAT_TERMINAL above)
 # Actions: s<state> (shift), r<rule> (reduce), acc (accept), err (error)
 
 [ACTION_TABLE]
-# State | $    | +    | *    | (    | )    | num
 0       | err  | err  | err  | s5   | err  | s6
 1       | acc  | err  | err  | err  | err  | err
 2       | r1   | s7   | err  | err  | err  | err
@@ -45,18 +47,18 @@ PRODUCTIONS:
 16      | err  | r7   | r7   | err  | r7   | err
 17      | err  | err  | err  | s15  | err  | s16
 18      | err  | err  | err  | s15  | err  | s16
-19      | err  | r2   | r2   | err  | r2   | err
+19      | err  | r2   | s18  | err  | r2   | err
 20      | err  | r4   | r4   | err  | r4   | err
 21      | err  | s17  | err  | err  | s22  | err
 22      | err  | r6   | r6   | err  | r6   | err
 
 # =============================================================================
-# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE (Reference only)
+# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE
 # =============================================================================
-# Format: state | non_terminal | goto_state
+# Columns correspond to NON_TERMINALS in this order: S E T F
+# (column indices match those declared in NON_TERMINALS above)
 
 [GOTO_TABLE]
-# State | S    | E    | T    | F
 0       | 1    | 2    | 3    | 4
 1       | err  | err  | err  | err
 2       | err  | err  | err  | err

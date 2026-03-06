@@ -23,4 +23,8 @@ message(STATUS " - (${PROJECT_NAME}) Added preprocessor subdirectory")
 add_subdirectory(scanner)
 message(STATUS " - (${PROJECT_NAME}) Added scanner subdirectory")
 
+# Add parser component
+add_subdirectory(parser)
+message(STATUS " - (${PROJECT_NAME}) Added parser subdirectory")
+
 message(STATUS "(${PROJECT_NAME}) Finished configuring all src/ modules.")

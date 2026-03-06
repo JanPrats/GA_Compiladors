@@ -26,6 +26,7 @@
 #include <stdlib.h>     // To set env for time zone
 #include <string.h>     // For filename manipulation    
 #include <time.h>       // For time-stamp of output logs filenames
+#include <ctype.h>
 
 
 
@@ -47,13 +48,13 @@
 
 
 // -----------------CHARACTER CONSTANTS------------------------------------------------- 
-#define SPACE_CHAR ' '
-#define TAB_CHAR '\t'
-#define END_OF_LINE '\n'
-#define CARRIAGE_RETURN '\r'
-#define EPSILON 'ε'
+#define SPACE_CHAR " "
+#define TAB_CHAR "\t"
+#define END_OF_LINE "\n"
+#define CARRIAGE_RETURN "\r"
+#define EPSILON "ε"
 
-#define EOF_TOKEN_LEXEME '$end'
+#define EOF_TOKEN_LEXEME "$end"
 
 
 // -----------------SIZE LIMITS------------------------------------------------ 
@@ -83,7 +84,7 @@
 #define EOF_RETURN 5
 #define EOTokenList 6
 
-#define NOT_REJECTED 7
+// #define NOT_REJECTED 7
 #define NOT_REJECTED 8
 
 
@@ -176,16 +177,7 @@ typedef struct RuleV2 {
     int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
 } RuleV2;
 
-typedef struct LanguageV2 { // Language without Goto
-    RuleItem terminals[MAX_ALPHABET_SIZE];
-    int  num_terminals;
-    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME]; //Podriem borrar el segon []
-    int  num_nonterminals;
-    RuleV2 productions[MAX_PRODUCTIONS];
-    int  num_productions;
-    char start_symbol[MAX_TOKEN_NAME];
-    AutomataSRA* sra;
-} LanguageV2;
+
 
 // typedef struct Language {
 //     char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
@@ -278,6 +270,17 @@ typedef struct AutomataSRA {
     Stack* stack;
     int tokens; //Potser canviaria això per un contador (que conti per quin element de la llista anem) i que la llista sigui global
 } AutomataSRA;
+
+typedef struct LanguageV2 { // Language without Goto
+    RuleItem terminals[MAX_ALPHABET_SIZE];
+    int  num_terminals;
+    RuleItem nonterminals[MAX_ALPHABET_SIZE][1]; //Podriem borrar el segon []
+    int  num_nonterminals;
+    RuleV2 productions[MAX_PRODUCTIONS];
+    int  num_productions;
+    char start_symbol[MAX_TOKEN_NAME];
+    AutomataSRA* sra;
+} LanguageV2;
 
 //------------------Status------------------------------------------------- 
 // CREC Q HAURIEM DE CANVIAR
