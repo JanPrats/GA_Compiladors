@@ -159,16 +159,11 @@ ActionSkip skip_nonchars(char c, char lookahead){
 
 //Stack Functions
 void initialize_stack(Stack *stack, AutomataDFA dfa) {
-    stack->top = 0;
-    RuleItem * empty_ruit;
-    int state = dfa.start_state;
-    push_stack(stack, *empty_ruit, state);
-
-    // RuleItem bottom;
-    // bottom.type = TERMINAL_SYMBOL;
-    // strcpy(bottom.symbol, EPSILON);   // or "$"
-
-    // push_stack(stack, bottom, dfa.start_state);
+    stack->top = -1;
+    RuleItem bottom = {0};  // Zero-initialize to avoid garbage
+    bottom.type = TERMINAL_SYMBOL;
+    strcpy(bottom.token.lexeme, EPSILON);
+    push_stack(stack, bottom, dfa.start_state);
 }
 
 void push_stack(Stack *stack, RuleItem symbol, int state) {
