@@ -385,3 +385,295 @@ void action_to_string(ParseAction action, char *output, size_t output_size) {
             break;
     }
 }
+
+/* -----------------------------------------------------------------------
+ * load_language
+ * Carrega la definició del lenguatge des d'un fitxer a una estructura LanguageV2.
+ * Format del fitxer:
+ *   TERMINALS: term1 term2 ...
+ *   NON_TERMINALS: nonterm1 nonterm2 ...
+ *   START_SYMBOL: symbol
+ *   PRODUCTIONS:
+ *   rule_id: lhs -> rhs
+ *   ...
+ * Retorna CORRECT_RETURN si té èxit, ERROR_RETURN si falla.
+ * ----------------------------------------------------------------------- */
+int load_language(const char* filename, LanguageV2* lang) {
+    // =====================================================================
+    // PART 1: VALIDACIÓ I INICIALITZACIÓ
+    // =====================================================================
+    
+    // Validem que la estructura no sigui NULL
+    if (!lang) return ERROR_RETURN;
+    
+    // Obrim el fitxer de configuració del lenguatge
+    FILE* f = fopen(filename, "r");
+    if (!f) return ERROR_RETURN;
+
+    char line[MAX_LINE_LENGTH];
+    // Inicialitzem els comptadors
+    lang->num_terminals = 0;
+    lang->num_nonterminals = 0;
+    lang->num_productions = 0;
+    memset(lang->start_symbol, 0, MAX_TOKEN_NAME);
+
+    int production_idx = 0;
+    int in_action_table = 0;
+    int in_goto_table = 0;
+
+    // Inicialitzem la taula de parseig (ParseTable)
+    ParseTable parse_table;
+    parse_table.num_states = 0;
+    parse_table.num_symbols = 0;
+    memset(&parse_table.cells, 0, sizeof(parse_table.cells));
+
+    // =====================================================================
+    // PART 2: LECTURA PRINCIPAL DEL FITXER (LÍNIA PER LÍNIA)
+    // =====================================================================
+
+    //Llegim el fitxer línia per línia
+    while (fgets(line, MAX_LINE_LENGTH, f)) {
+        //Eliminem la nova línia al final de la cadena
+        size_t len = strlen(line);
+        if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
+
+        //Saltem línies buides i comentaris
+        if (strlen(line) == 0 || line[0] == '#' || line[0] == ';') continue;
+
+        // =====================================================================
+        // PART 3: DETECCIÓ DE SECCIONS
+        // =====================================================================
+        
+        if (strncmp(line, "[ACTION_TABLE]", 14) == 0) {
+            in_action_table = 1;
+            in_goto_table = 0;
+            continue;
+        }
+        else if (strncmp(line, "[GOTO_TABLE]", 12) == 0) {
+            in_action_table = 0;
+            in_goto_table = 1;
+            continue;
+        }
+
+        // =====================================================================
+        // PART 4: PARSEIG ACTION_TABLE
+        // =====================================================================
+        
+        if (in_action_table && isdigit((unsigned char)line[0])) {
+            int state = atoi(line);
+            if (state >= MAX_STATES) continue;
+            
+            char row_copy[MAX_LINE_LENGTH];
+            strncpy(row_copy, line, MAX_LINE_LENGTH - 1);
+            row_copy[MAX_LINE_LENGTH - 1] = '\0';
+
+            // Saltem el número del state
+            char* token = strtok(row_copy, " \t|");
+            int symbol_idx = 0;
+
+            // Processem cada acció per a aquest state
+            while ((token = strtok(NULL, " \t|")) && symbol_idx < MAX_ALPHABET_SIZE) {
+                ParseAction action;
+                action.type = ACTION_ERROR;
+                action.value = 0;
+
+                // Parsegem l'acció: s<num>, r<num>, acc, err
+                if (token[0] == 's' || token[0] == 'S') {
+                    action.type = ACTION_SHIFT;
+                    action.value = atoi(token + 1);
+                }
+                else if (token[0] == 'r' || token[0] == 'R') {
+                    action.type = ACTION_REDUCE;
+                    action.value = atoi(token + 1);
+                }
+                else if (strncmp(token, "acc", 3) == 0) {
+                    action.type = ACTION_ACCEPT;
+                    action.value = 0;
+                }
+                else if (strncmp(token, "err", 3) == 0) {
+                    action.type = ACTION_ERROR;
+                    action.value = 0;
+                }
+
+                parse_table.cells[state][symbol_idx] = action;
+                symbol_idx++;
+            }
+            parse_table.num_states = (state + 1 > parse_table.num_states) ? state + 1 : parse_table.num_states;
+            parse_table.num_symbols = (symbol_idx > parse_table.num_symbols) ? symbol_idx : parse_table.num_symbols;
+        }
+
+        // =====================================================================
+        // PART 5: PARSEIG GOTO_TABLE
+        // =====================================================================
+        
+        if (in_goto_table && isdigit((unsigned char)line[0])) {
+            int state = atoi(line);
+            if (state >= MAX_STATES) continue;
+            
+            char row_copy[MAX_LINE_LENGTH];
+            strncpy(row_copy, line, MAX_LINE_LENGTH - 1);
+            row_copy[MAX_LINE_LENGTH - 1] = '\0';
+
+            // Saltem el número del state
+            char* token = strtok(row_copy, " \t|");
+            int symbol_idx = 0;
+
+            // Processem cada goto per a aquest state
+            while ((token = strtok(NULL, " \t|")) && symbol_idx < MAX_ALPHABET_SIZE) {
+                ParseAction goto_action;
+                goto_action.type = ACTION_ERROR;
+                goto_action.value = 0;
+
+                // Els gotos són números de state o "err"
+                if (strncmp(token, "err", 3) == 0) {
+                    goto_action.type = ACTION_ERROR;
+                    goto_action.value = 0;
+                }
+                else if (isdigit((unsigned char)token[0])) {
+                    goto_action.type = ACTION_GOTO;
+                    goto_action.value = atoi(token);
+                }
+
+                // Els gotos es guarden en la columna dels no-terminals
+                parse_table.cells[state][lang->num_terminals + symbol_idx] = goto_action;
+                symbol_idx++;
+            }
+        }
+
+        // =====================================================================
+        // PART 6: PARSEIG TERMINALS
+        // =====================================================================
+        
+        if (strncmp(line, "TERMINALS:", 10) == 0) {
+            //Posem el punter al començament dels terminals (després de "TERMINALS:")
+            char* tokens_str = line + 10;
+            char* token = strtok(tokens_str, " \t");
+            //Afegim cada terminal a la llista
+            while (token && lang->num_terminals < MAX_ALPHABET_SIZE) {
+                lang->terminals[lang->num_terminals].type = TERMINAL_SYMBOL;
+                strncpy(lang->terminals[lang->num_terminals].token.lexeme, token, MAX_TOKEN_NAME - 1);
+                lang->terminals[lang->num_terminals].token.lexeme[MAX_TOKEN_NAME - 1] = '\0';
+                lang->terminals[lang->num_terminals].token.cat = CAT_INDIFERENT;
+                lang->num_terminals++;
+                token = strtok(NULL, " \t");
+            }
+        }
+        
+        // =====================================================================
+        // PART 7: PARSEIG NON_TERMINALS
+        // =====================================================================
+        
+        else if (strncmp(line, "NON_TERMINALS:", 14) == 0) {
+            //Posem el punter al començament dels no-terminals
+            char* tokens_str = line + 14;
+            char* token = strtok(tokens_str, " \t");
+            //Afegim cada no-terminal a la llista
+            while (token && lang->num_nonterminals < MAX_ALPHABET_SIZE) {
+                lang->nonterminals[lang->num_nonterminals][0].type = NON_TERMINAL_SYMBOL;
+                strncpy(lang->nonterminals[lang->num_nonterminals][0].token.lexeme, token, MAX_TOKEN_NAME - 1);
+                lang->nonterminals[lang->num_nonterminals][0].token.lexeme[MAX_TOKEN_NAME - 1] = '\0';
+                lang->nonterminals[lang->num_nonterminals][0].token.cat = CAT_INDIFERENT;
+                lang->num_nonterminals++;
+                token = strtok(NULL, " \t");
+            }
+        }
+        
+        // =====================================================================
+        // PART 8: PARSEIG START_SYMBOL
+        // =====================================================================
+        
+        else if (strncmp(line, "START_SYMBOL:", 13) == 0) {
+            //Obtenim el símbol inicial (és un únic símbolo no-terminal)
+            char* symbol = line + 13;
+            //Saltem espais en blanc
+            while (*symbol == ' ' || *symbol == '\t') symbol++;
+            strncpy(lang->start_symbol, symbol, MAX_TOKEN_NAME - 1);
+            lang->start_symbol[MAX_TOKEN_NAME - 1] = '\0';
+        }
+        
+        // =====================================================================
+        // PART 9: DETECCIÓ SECCIÓ PRODUCTIONS (MARCA FI DE TAULES)
+        // =====================================================================
+        
+        else if (strncmp(line, "PRODUCTIONS:", 12) == 0) {
+            in_action_table = 0;
+            in_goto_table = 0;
+            continue;  // Saltem la línia de capçalera, les produccions venen després
+        }
+        
+        // =====================================================================
+        // PART 10: PARSEIG REGLES DE PRODUCCIÓ
+        // =====================================================================
+        
+        else if (!in_action_table && !in_goto_table && production_idx < MAX_PRODUCTIONS && strlen(line) > 0) {
+            //Format esperado: rule_id: lhs -> rhs1 rhs2 ...
+            char rule_copy[MAX_LINE_LENGTH];
+            strncpy(rule_copy, line, MAX_LINE_LENGTH - 1);
+            rule_copy[MAX_LINE_LENGTH - 1] = '\0';
+
+            //Extraem l'ID de la regla (número abans del ":")
+            char* rule_id_str = strtok(rule_copy, ":");
+            if (!rule_id_str) continue;
+            
+            lang->productions[production_idx].rule_id = atoi(rule_id_str);
+
+            //Extraem el que ve després del ":" fins al "->"
+            char* rest = strtok(NULL, "->");
+            if (!rest) continue;
+
+            //Parsegem el LHS (Left-Hand Side) - típicament un únic no-terminal
+            char* lhs_token = strtok(rest, " \t");
+            if (lhs_token) {
+                lang->productions[production_idx].lhs[0].type = NON_TERMINAL_SYMBOL;
+                strncpy(lang->productions[production_idx].lhs[0].token.lexeme, lhs_token, MAX_TOKEN_NAME - 1);
+                lang->productions[production_idx].lhs[0].token.lexeme[MAX_TOKEN_NAME - 1] = '\0';
+                lang->productions[production_idx].lhs[0].token.cat = CAT_INDIFERENT;
+                lang->productions[production_idx].lhs_length = 1;
+            }
+
+            //Parsegem el RHS (Right-Hand Side) - els símbols de la dreta de la producció
+            rest = strtok(NULL, "");
+            if (!rest) {
+                //Si no hi ha RHS, és una producció epsilon
+                lang->productions[production_idx].rhs_length = 0;
+            } else {
+                int rhs_idx = 0;
+                //Extraem cada símbol del RHS
+                char* rhs_token = strtok(rest, " \t");
+                while (rhs_token && rhs_idx < MAX_RHS_LENGTH) {
+                    //Determinem si és terminal o no-terminal basant-nos en si comença amb majúscula
+                    RuleItemType item_type = (isupper((unsigned char)rhs_token[0])) ? NON_TERMINAL_SYMBOL : TERMINAL_SYMBOL;
+                    
+                    lang->productions[production_idx].rhs[rhs_idx].type = item_type;
+                    strncpy(lang->productions[production_idx].rhs[rhs_idx].token.lexeme, rhs_token, MAX_TOKEN_NAME - 1);
+                    lang->productions[production_idx].rhs[rhs_idx].token.lexeme[MAX_TOKEN_NAME - 1] = '\0';
+                    lang->productions[production_idx].rhs[rhs_idx].token.cat = CAT_INDIFERENT;
+                    rhs_idx++;
+                    rhs_token = strtok(NULL, " \t");
+                }
+                lang->productions[production_idx].rhs_length = rhs_idx;
+            }
+
+            production_idx++;
+        }
+    }
+
+    // =====================================================================
+    // PART 11: FINALITZACIÓ I CREACIÓ DE L'ESTRUCTURA SRA
+    // =====================================================================
+
+    // Actualitzem el nombre total de produccions
+    lang->num_productions = production_idx;
+    
+    // Creem l'estructura SRA amb la taula de parseig carregada
+    lang->sra = (AutomataSRA*)malloc(sizeof(AutomataSRA));
+    if (lang->sra) {
+        lang->sra->table = parse_table;
+        lang->sra->dfa = NULL;
+        lang->sra->stack = NULL;
+        lang->sra->tokens = 0;
+    }
+
+    fclose(f);
+    return CORRECT_RETURN;
+}

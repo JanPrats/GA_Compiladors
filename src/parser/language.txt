@@ -1,28 +1,25 @@
 # =============================================================================
-# SECTION 1: GRAMMAR DEFINITION AND PRODUCTION RULES
+# GRAMMAR DEFINITION AND PRODUCTION RULES
+# Format compatible with load_language() function
 # =============================================================================
-# IMPORTANT
-# We transform (lexeme, action/goto column) from language.txt into a ( TERMINAL, (<lexeme, category>) , action/goto column ) inside RuleItem : {RuleItemType type; Token token; int column;}
-# CAT_TERMINAL elements have category string_to_category(lexeme), all the others have CAT_INDIFERENT category (category is added in the code, not in this file)
-# for PRODUCTION RULES we search each symbol from both hs (rhs and lhs) to find one that is in the vocabulary defined in GRAMMAR. Then we add them to the RulesV2 structure
 
-[GRAMMAR]
-START_SYMBOL: "S"
-NON_TERMINALS: ("S",0) ("E",1) ("T",2) ("F",3)
-TERMINALS: ("+",1) ("*",2) ("(",3) (")",4) ("$",0)
-CAT_TERMINAL: ("CAT_NUMBER",5)
+START_SYMBOL: S
 
-[PRODUCTIONS]
-1 | S -> E
-2 | E -> E + T
-3 | E -> T
-4 | T -> T * F
-5 | T -> F
-6 | F -> ( E )
-7 | F -> num
+NON_TERMINALS: S E T F
+
+TERMINALS: $ + * ( ) num
+
+PRODUCTIONS:
+1: S -> E
+2: E -> E + T
+3: E -> T
+4: T -> T * F
+5: T -> F
+6: F -> ( E )
+7: F -> num
 
 # =============================================================================
-# SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE
+# SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE (Reference only)
 # =============================================================================
 # Format: state | terminal | action
 # Actions: s<state> (shift), r<rule> (reduce), acc (accept), err (error)
@@ -54,7 +51,7 @@ CAT_TERMINAL: ("CAT_NUMBER",5)
 22      | err  | r6   | r6   | err  | r6   | err
 
 # =============================================================================
-# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE
+# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE (Reference only)
 # =============================================================================
 # Format: state | non_terminal | goto_state
 

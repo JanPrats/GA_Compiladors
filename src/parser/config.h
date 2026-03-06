@@ -366,4 +366,6 @@ void stack_to_string(const Stack *stack, char *output, size_t output_size);
 
 void action_to_string(ParseAction action, char *output, size_t output_size);
 
+int load_language(const char* filename, LanguageV2* lang);
+
 #endif // CONFIG_FILES_H
