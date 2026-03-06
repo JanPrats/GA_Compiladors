@@ -1,15 +1,13 @@
 # COMPILADORS
   ## 1. Team leaders of each TM
 
-- P1: Jan 
-
-- P2: Andrea
-- P3: Clara
-- P4: Marc
-- P5: Gorka
-- P6: Pol
-
-
+- P1: Jan Prats Soler - u213927
+- P2: Andrea Salló Ribas - u214974
+- P3: Gorka Hernández - u214951
+- P4: Marc Rodríguez Vitolo - u215105
+- P5: Clara Serra Borràs - u204635
+- P6: Pol García López - u214574
+  
 ---
 
 ## 2. Overview
@@ -23,6 +21,18 @@ in separete run and debug modes. So the project has several main functions.
 The testing is integrated with the github actions so it is automatically run everytime 
 push or pull request is done. The output logs of automatic runs are stored in the logs 
 directory. The log files are named with the time to avoid overwritting the different runs files.
+
+---
+
+## Repository Organization Across Practices
+
+All three practices live in the **same repository**, each in a **dedicated sub-folder** under `src/`. No separate branches or separate repositories are used. This keeps the full compilation pipeline visible in one place while keeping each practice's code isolated.
+
+| Practice | Folder | Description |
+|----------|--------|-------------|
+| P1 – Preprocessor | `src/preprocessor/` | C preprocessor: handles `#include`, `#define`, macros, `#ifdef/#endif`, comment removal |
+| P2 – Scanner | `src/scanner/` | Lexical analyser: tokenises C source files using DFA automata, produces `.cscn` token files |
+| P3 – Parser | `src/parser/` | Bottom-up parser: shift/reduce automaton engine that parses arithmetic expressions from a token file |
 
 ---
 
@@ -136,6 +146,15 @@ This allows to select the proper compiler and generator in VS Code easily.
   - The main program (`modules_template_main.exe`).
   - Each module test executable (`test_module_args.exe`, `test_module_2.exe`).
 - These use **GDB** from the MSYS2 toolchain and are preconfigured for easy debugging in VS Code.
+
+### How to run P3
+
+```bash
+Run the parser on the token file
+$ ./parser  <input.cscn>  <language.txt>
+or
+$ ./parser  <input.c>  <language.txt>    
+```
 
 ---
 
