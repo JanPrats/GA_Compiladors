@@ -1,8 +1,8 @@
 [INFO] Loaded 9 tokens from 'prova.cscn'
 [INFO] Language loaded from 'src/parser/language.txt': 6 terminals, 7 productions
-+-------+-------+-------+-------+-------+
-| State | Input  | Read Token | Stack  | Action |
-+-------+-------+-------+-------+-------+
++-------+----------------------+------------+---------------------+------------+
+| State | Input                | Read Token | Stack               | Action     |
++-------+----------------------+------------+---------------------+------------+
 |     5 | (                    | (          | ε (                 | S5         |
 |    16 | ( 9                  | 9          | ε ( 9               | S16        |
 |     5 | ( 9 +                | +          | ε (                 | R7         |

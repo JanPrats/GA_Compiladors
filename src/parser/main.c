@@ -157,9 +157,9 @@ int main(int argc, char *argv[]) {
     */
     
     // Add header to output file
-    fprintf(status.ofile, "+-------+-------+-------+-------+-------+\n");
-    fprintf(status.ofile, "| State | Input  | Read Token | Stack  | Action |\n");
-    fprintf(status.ofile, "+-------+-------+-------+-------+-------+\n");
+    fprintf(status.ofile, "+-------+----------------------+------------+---------------------+------------+\n");
+    fprintf(status.ofile, "| State | Input                | Read Token | Stack               | Action     |\n");
+    fprintf(status.ofile, "+-------+----------------------+------------+---------------------+------------+\n");
     
     automatasra_driver(language);
     destroy_language(language); //revisar
