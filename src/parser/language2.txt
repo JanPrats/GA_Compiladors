@@ -1,0 +1,48 @@
+# =================================================
+# GRAMMAR DEFINITION
+# =================================================
+
+START_SYMBOL: E
+
+NON_TERMINALS: E
+
+TERMINALS: int + ( ) $
+
+PRODUCTIONS:
+1: E -> E + ( E )
+2: E -> int
+
+
+# =================================================
+# SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE
+# =================================================
+
+[ACTION_TABLE]
+# state | $ | + | ( | ) | int
+0 | err | err | err | err | s1
+1 | r2  | r2  | err | r2  | err
+2 | acc | s3  | err | err | err
+3 | err | err | s4  | err | err
+4 | err | err | err | err | s5
+5 | err | err | err | r2  | err
+6 | err | err | err | s7  | err
+7 | r1  | r1  | err | r1  | err
+
+
+# =================================================
+# SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE
+# =================================================
+
+[GOTO_TABLE]
+# state | non_terminal | goto_state
+0 | E | 2
+1 | E | err
+2 | E | err
+3 | E | err
+4 | E | 6
+5 | E | err
+6 | E | err
+7 | E | err
+
+
+
