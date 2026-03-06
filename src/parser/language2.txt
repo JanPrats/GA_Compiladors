@@ -1,45 +1,49 @@
-# =================================================
-# GRAMMAR DEFINITION
-# =================================================
+# =============================================================================
+# SECTION 1: GRAMMAR DEFINITION AND PRODUCTION RULES
+# =============================================================================
+# IMPORTANT
+# We transform (lexeme, action/goto column) from language.txt into a ( TERMINAL, (<lexeme, category>) , action/goto column ) inside RuleItem : {RuleItemType type; Token token; int column;}
+# CAT_TERMINAL elements have category string_to_category(lexeme), all the others have CAT_INDIFERENT category (category is added in the code, not in this file)
+# for PRODUCTION RULES we search each symbol from both hs (rhs and lhs) to find one that is in the vocabulary defined in GRAMMAR. Then we add them to the RulesV2 structure
 
-START_SYMBOL: E
+[GRAMMAR]
+START_SYMBOL: "E"
+NON_TERMINALS: ("E",0)
+TERMINALS: ("$",1) ("+",2) ("(",3) (")",4) ("CAT_NUMBER",0)
 
-NON_TERMINALS: E
+[PRODUCTIONS]
+1 | E -> E + ( E )
+2 | E -> CAT_NUMBER
 
-TERMINALS: int + ( ) $
-
-PRODUCTIONS:
-1: E -> E + ( E )
-2: E -> int
-
-
-# =================================================
+# =============================================================================
 # SECTION 2: SHIFT/REDUCE AUTOMATON - ACTION TABLE
-# =================================================
+# =============================================================================
+# Columns correspond to TERMINALS in this order: CAT_NUMBER $ + ( )
+# (column indices match those declared in TERMINALS above)
+# Actions: s<state> (shift), r<rule> (reduce), acc (accept), err (error)
 
 [ACTION_TABLE]
-# state | $ | + | ( | ) | int
-0 | err | err | err | err | s1
-1 | r2  | r2  | err | r2  | err
-2 | acc | s3  | err | err | err
-3 | err | err | s4  | err | err
-4 | err | err | err | err | s5
-5 | err | err | err | r2  | err
-6 | err | err | err | s7  | err
-7 | r1  | r1  | err | r1  | err
+0 | s1  | err | err | err | err
+1 | err | r2  | r2  | err | r2
+2 | err | acc | s3  | err | err
+3 | err | err | err | s4  | err
+4 | s5  | err | err | err | err
+5 | err | err | err | err | r2
+6 | err | err | err | err | s7
+7 | err | r1  | r1  | err | r1
 
-
-# =================================================
+# =============================================================================
 # SECTION 3: SHIFT/REDUCE AUTOMATON - GOTO TABLE
-# =================================================
+# =============================================================================
+# Columns correspond to NON_TERMINALS in this order: E
+# (column indices match those declared in NON_TERMINALS above)
 
 [GOTO_TABLE]
-# state | non_terminal | goto_state
-0 | E | 2
-1 | E | err
-2 | E | err
-3 | E | err
-4 | E | 6
-5 | E | err
-6 | E | err
-7 | E | err
+0 | 2
+1 | err
+2 | err
+3 | err
+4 | 6
+5 | err
+6 | err
+7 | err
