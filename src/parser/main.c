@@ -5,15 +5,15 @@
  * Entry point for the Parser (Practice 3).
  *
  * Program Flow:
- *   1. Parse arguments: expect a .cscn file path
+ *   1. Parse arguments: expect a .cscn file path and optional language file
  *   2. Open output file  <stem>_p3dbg.txt
  *   3. Load tokens from the .cscn file into status.all_tokens
- *   4. (TODO) Load language from language.txt into a Language struct
+ *   4. (TODO) Load language from selected language file into a Language struct
  *   5. (TODO) Initialize SRA and run the parser driver
  *   6. Close output file
  *
  * Usage:
- *   parser <input_file.cscn>
+ *   parser <input_file.cscn> [language_file.txt]
  *   parser -help
  *
  * Exit Codes:
@@ -32,10 +32,11 @@
  * Prints usage information to stdout.
  * ----------------------------------------------------------------------- */
 static void show_help(void) {
-    printf("Usage: parser <input_file.cscn>\n");
+    printf("Usage: parser <input_file.cscn> [language_file.txt]\n");
     printf("Options:\n");
     printf("  -help    Display this help message\n");
     printf("\n");
+    printf("Default language file: language.txt\n");
     printf("Output: <input_file>_p3dbg.txt\n");
 }
 
@@ -80,6 +81,7 @@ static int init_parser(const char *input_file) {
  * main
  * ----------------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
+    const char *language_file = "language.txt";
 
     /* --- Argument check ------------------------------------------------ */
     if (argc < 2) { // Check if there are enough args
@@ -91,6 +93,16 @@ int main(int argc, char *argv[]) {
         status.help = true;
         show_help();
         return 0;
+    }
+
+    if (argc > 3) {
+        fprintf(stderr, "Error: too many arguments\n");
+        show_help();
+        return 1;
+    }
+
+    if (argc == 3) {
+        language_file = argv[2];
     }
 
     /* --- Initialise: open output file ---------------------------------- */
@@ -107,18 +119,18 @@ int main(int argc, char *argv[]) {
     fprintf(status.ofile, "[INFO] Loaded %d tokens from '%s'\n",
             status.all_tokens.count, status.ifile_name);
 
-    /* --- Load language definition from language.txt -------------------- */
+    /* --- Load language definition from selected file -------------------- */
     LanguageV2 language;
     memset(&language, 0, sizeof(language));
 
-    if (load_language("language.txt", &language) != CORRECT_RETURN) { //To be done
-        fprintf(stderr, "Error: could not load language from 'language.txt'\n");
+    if (load_language(language_file, &language) != CORRECT_RETURN) { //To be done
+        fprintf(stderr, "Error: could not load language from '%s'\n", language_file);
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
-    fprintf(status.ofile, "[INFO] Language loaded: %d terminals, %d productions\n",
-            language.num_terminals, language.num_productions);
+    fprintf(status.ofile, "[INFO] Language loaded from '%s': %d terminals, %d productions\n",
+            language_file, language.num_terminals, language.num_productions);
 
     /* --- Build parse table (action + goto) from loaded language -------- */
     // AutomataDFA  dfa;
