@@ -62,10 +62,10 @@ void add_token_to_list(char* lexeme, Category cat) {
     Token *t = &status.all_tokens.tokens[status.all_tokens.count];
 
     strncpy(t->lexeme, lexeme, MAX_TOKEN_NAME - 1);
-    t->lexeme[MAX_TOKEN_NAME - 1] = '\0';  // ensure termination
-
+    t->lexeme[MAX_TOKEN_NAME - 1] = '\0'; // ensure termination
+ 
     t->cat = cat;
-    t->line = status.line;
+    t->line = status.line; //will always be 0, we don't use it I think
 
     status.all_tokens.count++;
 }
@@ -159,7 +159,10 @@ ActionSkip skip_nonchars(char c, char lookahead){
 
 //Stack Functions
 void initialize_stack(Stack *stack, AutomataDFA dfa) {
-    stack->top = -1;
+    stack->top = 0;
+    RuleItem * empty_ruit;
+    int state = dfa.start_state;
+    push_stack(stack, *empty_ruit, state);
 
     // RuleItem bottom;
     // bottom.type = TERMINAL_SYMBOL;

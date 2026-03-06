@@ -78,14 +78,14 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             *type = TERMINAL_SYMBOL;
             int col = vocab.column;
             // Look up in the ACTION table
-            ParseAction cell = sra->table.cells[current_state][col];
+            ParseAction cell = sra->table.cells[current_state][col]; // err, Reject_Error {} Check if languange.txt transforms err from table into ERROR or REJECT
             return cell;   // already has type + value populated when the table was built
         }
     }
 
     // ---- Search non-terminals -------------------------------------------
     for (int i = 0; i < language->num_nonterminals; i++) {
-        RuleItem vocab = language->nonterminals[i][0]; // first slot holds the NT descriptor
+        RuleItem vocab = language->nonterminals[i][0]; // first slot holds the NT descriptor // Check if language.txt is correct here aswell
         int match = 0;
         if (vocab.token.cat == CAT_INDIFERENT) {
             match = (strcmp(token.lexeme, vocab.token.lexeme) == 0);
@@ -98,7 +98,7 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             int col = vocab.column;
             // Look up in the GOTO table (stored in the DFA's transition matrix)
             int next_state = sra->dfa->matrix.states_rows[current_state].new_state[col];
-            result.type  = ACTION_GOTO;
+            result.type  = ACTION_GOTO; //since we are looking at the goto table
             result.value = next_state;
             return result;
         }
@@ -108,7 +108,7 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
     return result;
 }
 
-void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
+void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens, LanguageV2 * language){
     /*
     Takes the Rule 
     Looks at its rhs length (a parameter in the struct)
@@ -129,6 +129,11 @@ void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens){
 
     // Tell the caller how many LHS tokens were produced
     *num_tokens = rule->lhs_length;
+
+    //Backtrack
+    StackElement top = peek_stack(stack);
+    
+    language->sra->dfa->current_state = top.state;
 }
 
 ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language) {
@@ -151,10 +156,10 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
         Token lhs[MAX_RHS_LENGTH];
         int num_tokens;
         
-        reduce_rule(a->stack, &rule2r, lhs, &num_tokens); // pop following rhs
+        reduce_rule(a->stack, &rule2r, lhs, &num_tokens, language); // pop following rhs
 
         // include the lookahead/original token after the reduced lhs symbols
-        // this ensures the token is processed as part of the recursive calls
+        // this ensures the token is processed as part of the recursive calls 
         if (num_tokens < MAX_RHS_LENGTH) {
             lhs[num_tokens] = token;
             num_tokens++;
@@ -164,6 +169,8 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
         for (int i = 0; i < num_tokens; i++) {
             returned = update_automatasra(a, lhs[i], language);
             if (returned == ACTION_REJECT || returned == ACTION_ERROR) {
+                token.line = a->tokens;
+                write_update_to_output(*language->sra->stack, token, action); 
                 return returned;
             }
         }
@@ -192,8 +199,8 @@ Token read_next_token(AutomataSRA* sra, int* returned){ //This input parameter c
         if (returned)
             *returned = EOTokenList;
         Token eof;
-        strncpy(eof.lexeme, EOF_TOKEN_LEXEME, MAX_TOKEN_NAME-1);
-        eof.lexeme[MAX_TOKEN_NAME-1] = '\0'; // we could also use EOF_TOKEN_LEXEME
+        strncpy(eof.lexeme, EOF_TOKEN_LEXEME, MAX_TOKEN_NAME-1); // we could also use EOF_TOKEN_LEXEME // Check if in language.txt $ ==> EOF_TOKEN_LEXEME
+        eof.lexeme[MAX_TOKEN_NAME-1] = '\0'; 
         eof.line = sra->tokens;
         eof.cat = CAT_INDIFERENT;
         return eof;
@@ -209,7 +216,7 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     --------------------------------------------
     | State | Input | Stack | Operation        |
     --------------------------------------------
-    |   0   | int   |  E    | Reduce 5 or R5   |
+    |   1   | int   |  E    | Reduce 5 or R5   |
     --------------------------------------------
     */
     // Get the state from the top of the stack
@@ -266,18 +273,18 @@ void automatasra_driver(LanguageV2 * language){
     Token tokn = read_next_token(language->sra, &returned); // Caràcter llegit del fitxer
 
     if (returned == EOTokenList){
-        report_error_typed(ERR_EMPTY_FILE, 0, SCANNER_STEP);
+        //Error
         return;
     }
 
-    int returned_copy = returned;
+    // int returned_copy = returned;
     ActionType operation = ACTION_ACCEPT; //Not sure if accept or reject if empty file
 
     while (returned != EOTokenList){ //Anar llegint el fitxer
         
         ActionType operation = update_automatasra(language->sra, tokn, language);
 
-        if (operation == ACTION_REJECT){ // L'autòmata ha rebutjat la llista de tokens
+        if (returned == ACTION_REJECT || returned == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
             break;
         }
         tokn = read_next_token(language->sra, &returned); //Last token will be EOF token
@@ -290,7 +297,7 @@ void automatasra_driver(LanguageV2 * language){
         write_update_to_output(*language->sra->stack, tokn, pact);
     }
     
-    if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case
-        report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line, SCANNER_STEP);
-    }
+    // if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case
+    //     report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line, SCANNER_STEP);
+    // }
 }
