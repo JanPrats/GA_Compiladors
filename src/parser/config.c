@@ -245,7 +245,7 @@ void generate_timestamped_log_filename(const char* base_name, char* output, size
 
     split_path(base_name, path, filename, extension);
 
-    if(extension == NULL || strlen(extension) == 0) {
+    if (extension[0] == '\0') {
         snprintf(extension, sizeof(extension), "log"); // Default extension if none provided
     }
 
