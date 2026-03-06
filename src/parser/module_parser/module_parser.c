@@ -72,14 +72,6 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             return cell;   // already has type + value populated when the table was built
         }
     }
-    // fprintf(status.ofile, "DEBUG: no terminal match for lexeme='%s' cat=%d, state=%d\n", 
-    // token.lexeme, token.cat, current_state);
-    // for (int i = 0; i < language->num_terminals; i++) {
-    //     fprintf(status.ofile, "  vocab[%d]: lexeme='%s' cat=%d col=%d\n",
-    //         i, language->terminals[i].token.lexeme, 
-    //         language->terminals[i].token.cat,
-    //         language->terminals[i].column);
-    // }
 
     // ---- Search non-terminals -------------------------------------------
     for (int i = 0; i < language->num_nonterminals; i++) {
@@ -163,17 +155,6 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
         int num_tokens;
         
         reduce_rule(a->stack, &rule2r, lhs, &num_tokens, language); // pop following rhs
-        // printf("REDUCE rule %d, LHS='%s', current_state after reduce=%d, token='%s'\n",
-        //     action.value,
-        //     lhs[0].lexeme,
-        //     a->dfa->current_state,
-        //     token.lexeme);
-        // include the lookahead/original token after the reduced lhs symbols
-        // this ensures the token is processed as part of the recursive calls 
-        // if (num_tokens < MAX_RHS_LENGTH) {
-        //     lhs[num_tokens] = token;
-        //     num_tokens++;
-        // }
 
         // process each token produced by the reduction (including the original token)
         token.line = a->tokens; 
@@ -247,16 +228,6 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
         if (strlen(input) + strlen(status.all_tokens.tokens[i].lexeme) < MAX_INPUT_LENGTH - 1)
             strcat(input, status.all_tokens.tokens[i].lexeme);
     }
-    // // Add the marker for current position
-    // if (tokn.line < status.all_tokens.count) {
-    //     if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
-    //         strcat(input, " | ");
-    //     if (strlen(input) + strlen(tokn.lexeme) < MAX_INPUT_LENGTH - 1)
-    //         strcat(input, tokn.lexeme);
-    // } else if (tokn.line == status.all_tokens.count) {
-    //     if (strlen(input) + 3 < MAX_INPUT_LENGTH - 1)
-    //         strcat(input, " | ");
-    // }
     
     // Get stack representation (from 0 to top)
     char stack_str[MAX_INPUT_LENGTH];
@@ -290,25 +261,16 @@ void automatasra_driver(LanguageV2 * language){
         //Error
         return;
     }
-    // int returned_copy = returned;
+    
     ActionType operation = ACTION_ACCEPT; //Not sure if accept or reject if empty file
 
     while (returned != EOTokenList){ //Anar llegint el fitxer
-        // fprintf(status.ofile, "We have reached this point 2\n");
+        
         ActionType operation = update_automatasra(language->sra, tokn, language);
-        // ParseAction pact;
-        // pact.type = operation;
-        // pact.value = -1; //change by global variable
-        // fprintf(status.ofile, "We have reached this point 3\n");
-        // char oper[MAX_OPERATION_NAME];
-        // action_to_string(pact, oper, sizeof(operation));
-        // fprintf(status.ofile, "action: %s\n", oper);
-        // fprintf(status.ofile, "Ehmm %d\n", operation == ACTION_REJECT);
 
         if (operation == ACTION_REJECT || operation == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
             break;
         }
-        // fprintf(status.ofile, "We have reached this point %d", language->sra->tokens);
         tokn = read_next_token(language->sra, &returned); //Last token will be EOF token
     }
 
@@ -318,8 +280,4 @@ void automatasra_driver(LanguageV2 * language){
         pact.value = -1; //change by global variable
         write_update_to_output(*language->sra->stack, tokn, pact);
     }
-    
-    // if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case
-    //     report_error_typed(ERR_TOKEN_NOT_RECOGNIZED, status.line, SCANNER_STEP);
-    // }
 }

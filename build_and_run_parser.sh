@@ -11,11 +11,16 @@ echo "📁 Creating build directory..."
 mkdir build
 cd build
 
-# echo "⚙️ Running CMake..."
-# cmake ..
+### NOT-DEBUG ###
+echo "⚙️ Running CMake..."
+cmake ..
+#################
 
-echo "⚙️ Running CMake with debug symbols..."
-cmake .. -DCMAKE_C_FLAGS="-g"
+### DEBUG ###
+# echo "⚙️ Running CMake with debug symbols..."
+# cmake .. -DCMAKE_C_FLAGS="-g"
+#############
+
 
 echo "🔨 Building project..."
 make
@@ -24,12 +29,18 @@ echo "📦 Moving parser executable..."
 cd src/parser
 mv parser ../../../
 
-# echo "🚀 Running parser..."
-# cd ../../../
-# ./parser prova.cscn src/parser/language.txt
 
-echo "🚀 Running parser with GDB..."
+### NOT-DEBUG ###
+echo "🚀 Running parser..."
 cd ../../../
-gdb -batch -ex "run prova.cscn src/parser/language.txt" -ex "bt" ./parser
+./parser prova.cscn src/parser/language.txt
+#################
+
+
+### DEBUG ###
+# echo "🚀 Running parser with GDB..."
+# cd ../../../
+# gdb -batch -ex "run prova.cscn src/parser/language.txt" -ex "bt" ./parser
+#############
 
 echo "✅ Done"
