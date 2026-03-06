@@ -14,7 +14,7 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
 
 Token read_next_token(AutomataSRA* sra, int* returned);
 
-int write_update_to_output(Stack stack, Token tokn, ParseAction op);
+int write_update_to_output(const Stack *stack, Token tokn, ParseAction op);
 
 void automatasra_driver(LanguageV2 * language);
 

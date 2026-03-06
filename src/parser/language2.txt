@@ -6,7 +6,8 @@ START_SYMBOL: E
 
 NON_TERMINALS: E
 
-TERMINALS: int + ( ) $
+TERMINALS: $ + ( ) int
+CAT_TERMINAL: CAT_NUMBER 4
 
 PRODUCTIONS:
 1: E -> E + ( E )
@@ -34,15 +35,15 @@ PRODUCTIONS:
 # =================================================
 
 [GOTO_TABLE]
-# state | non_terminal | goto_state
-0 | E | 2
-1 | E | err
-2 | E | err
-3 | E | err
-4 | E | 6
-5 | E | err
-6 | E | err
-7 | E | err
+# State | E
+0       | 2
+1       | err
+2       | err
+3       | err
+4       | 6
+5       | err
+6       | err
+7       | err
 
 
 

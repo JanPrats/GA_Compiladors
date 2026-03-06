@@ -25,8 +25,6 @@
 
 #include "../config.h"
 
-static int read_field(FILE* f, char* buf, int len, char stop);
 int load_tokens_from_file(const char* filename);
-int load_tokens(void);
 
 #endif // MODULE_LOAD_TOKENS_H

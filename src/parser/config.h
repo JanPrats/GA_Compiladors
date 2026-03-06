@@ -14,7 +14,7 @@
  * - Token and buffer data structures
  *
  * Team: GA
- * Contributor/s: Pol García, Clara Serra
+ * Contributor/s: Pol García, Clara Serra, Gorka Hernández
  * -----------------------------------------------------------------------------
  */
 
@@ -51,9 +51,9 @@
 #define TAB_CHAR '\t'
 #define END_OF_LINE '\n'
 #define CARRIAGE_RETURN '\r'
-#define EPSILON 'ε'
+#define EPSILON "ε"
 
-#define EOF_TOKEN_LEXEME '$end'
+#define EOF_TOKEN_LEXEME "$"
 
 
 // -----------------SIZE LIMITS------------------------------------------------ 
@@ -84,7 +84,6 @@
 #define EOTokenList 6
 
 #define NOT_REJECTED 7
-#define NOT_REJECTED 8
 
 
 
@@ -176,16 +175,19 @@ typedef struct RuleV2 {
     int rhs_length; //PER SABER EL NUM D POPS(Ej: 3 EN "E + T")
 } RuleV2;
 
-typedef struct LanguageV2 { // Language without Goto
+typedef struct LanguageV2 LanguageV2;  // forward declaration
+typedef struct AutomataSRA AutomataSRA; // forward declaration
+
+struct LanguageV2 { // Language without Goto
     RuleItem terminals[MAX_ALPHABET_SIZE];
     int  num_terminals;
-    RuleItem nonterminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME]; //Podriem borrar el segon []
+    RuleItem nonterminals[MAX_ALPHABET_SIZE];
     int  num_nonterminals;
     RuleV2 productions[MAX_PRODUCTIONS];
     int  num_productions;
     char start_symbol[MAX_TOKEN_NAME];
     AutomataSRA* sra;
-} LanguageV2;
+};
 
 // typedef struct Language {
 //     char terminals[MAX_ALPHABET_SIZE][MAX_TOKEN_NAME];
@@ -200,8 +202,10 @@ typedef struct LanguageV2 { // Language without Goto
 
 //------------------Parse table and DFA-------------------------------------------------
 typedef struct {
-    ActionType type; //SHIFT, REDUCE, GOTO, ACCEPT, ERROR
-    int value; //Si es SHIFT/GOTO: num state. Si es REDUCE: num regla.
+    // In ACTION table cells: SHIFT, REDUCE, ACCEPT, ERROR.
+    // ACTION_GOTO is produced when querying DFA transitions for non-terminals.
+    ActionType type;
+    int value; // SHIFT/GOTO -> next state, REDUCE -> rule id.
 } ParseAction;
 
 // CreC Q HAURIEM DE CANVIAR i utilitzar la taula del dfa, pel q va dir la dolors!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -209,7 +213,7 @@ typedef struct {
 typedef struct ParseTable {
     ParseAction cells[MAX_STATES][MAX_ALPHABET_SIZE];
     int         num_states;
-    int         num_symbols;    // num_terminals + num_nonterminals
+    int         num_symbols;    // ACTION columns (terminals).
 } ParseTable;
 
 // ------------------Stack------------------------------------------------
@@ -247,7 +251,7 @@ typedef struct TransitionMatrix {
 } TransitionMatrix;
 
 typedef struct SymbolVocab {
-    char character;
+    char symbol[MAX_TOKEN_NAME];
     int column;
 } SymbolVocab;
 
@@ -272,12 +276,12 @@ extern AutomataDFA* ALL_AUTOMATA[];
 extern int NUM_AUTOMATA;
 
 //------------------------------SRA-------------------------------------------------
-typedef struct AutomataSRA {
+struct AutomataSRA {
     AutomataDFA* dfa;
     ParseTable table; 
     Stack* stack;
     int tokens; //Potser canviaria això per un contador (que conti per quin element de la llista anem) i que la llista sigui global
-} AutomataSRA;
+};
 
 //------------------Status------------------------------------------------- 
 // CREC Q HAURIEM DE CANVIAR
@@ -367,5 +371,7 @@ void stack_to_string(const Stack *stack, char *output, size_t output_size);
 void action_to_string(ParseAction action, char *output, size_t output_size);
 
 int load_language(const char* filename, LanguageV2* lang);
+
+void split_path(const char *fullpath, char *path, char *filename, char *extension);
 
 #endif // CONFIG_FILES_H

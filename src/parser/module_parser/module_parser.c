@@ -85,7 +85,7 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
 
     // ---- Search non-terminals -------------------------------------------
     for (int i = 0; i < language->num_nonterminals; i++) {
-        RuleItem vocab = language->nonterminals[i][0]; // first slot holds the NT descriptor // Check if language.txt is correct here aswell
+        RuleItem vocab = language->nonterminals[i];
         int match = 0;
         if (vocab.token.cat == CAT_INDIFERENT) {
             match = (strcmp(token.lexeme, vocab.token.lexeme) == 0);
@@ -98,8 +98,13 @@ ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* typ
             int col = vocab.column;
             // Look up in the GOTO table (stored in the DFA's transition matrix)
             int next_state = sra->dfa->matrix.states_rows[current_state].new_state[col];
-            result.type  = ACTION_GOTO; //since we are looking at the goto table
-            result.value = next_state;
+            if (next_state < 0) {
+                result.type  = ACTION_ERROR;
+                result.value = 0;
+            } else {
+                result.type  = ACTION_GOTO;
+                result.value = next_state;
+            }
             return result;
         }
     }
@@ -152,11 +157,12 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
     }
     else if (action.type == ACTION_REDUCE)
     {
-        RuleV2 rule2r = language->productions[action.value];
-        Token lhs[MAX_RHS_LENGTH];
+        RuleV2 *rule2r = &language->productions[action.value];
+        Token *lhs = (Token *)malloc(MAX_RHS_LENGTH * sizeof(Token));
+        if (!lhs) return ACTION_ERROR;
         int num_tokens;
         
-        reduce_rule(a->stack, &rule2r, lhs, &num_tokens, language); // pop following rhs
+        reduce_rule(a->stack, rule2r, lhs, &num_tokens, language); // pop following rhs
 
         // include the lookahead/original token after the reduced lhs symbols
         // this ensures the token is processed as part of the recursive calls 
@@ -170,14 +176,16 @@ ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language)
             returned = update_automatasra(a, lhs[i], language);
             if (returned == ACTION_REJECT || returned == ACTION_ERROR) {
                 token.line = a->tokens;
-                write_update_to_output(*language->sra->stack, token, action); 
+                write_update_to_output(language->sra->stack, token, action);
+                free(lhs);
                 return returned;
             }
         }
+        free(lhs);
     }
     
     token.line = a->tokens; //since we won't be using token.line anymore we substitute it by the position on the list where we found this token (can be used to determine where to puta | or · in the output <input> column. F.example { 9 * | ( 5 + 2 )} )
-    write_update_to_output(*language->sra->stack, token, action); // See function for explanation. stack --> State, tokn --> input, stack --> stack, decisiton --> operation
+    write_update_to_output(language->sra->stack, token, action); // See function for explanation. stack --> State, tokn --> input, stack --> stack, decisiton --> operation
     return returned;
 }
 
@@ -209,7 +217,7 @@ Token read_next_token(AutomataSRA* sra, int* returned){ //This input parameter c
     return status.all_tokens.tokens[count];
 }
 
-int write_update_to_output(Stack stack, Token tokn, ParseAction op){
+int write_update_to_output(const Stack *stack, Token tokn, ParseAction op){
     /*
     "Adds a row to the output table"
 
@@ -220,7 +228,7 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     --------------------------------------------
     */
     // Get the state from the top of the stack
-    StackElement temporal_element = peek_stack(&stack);
+    StackElement temporal_element = peek_stack(stack);
     int state = temporal_element.state;
     
     // Build the input string (tokens read so far with a | marker)
@@ -247,7 +255,7 @@ int write_update_to_output(Stack stack, Token tokn, ParseAction op){
     
     // Get stack representation (from 0 to top)
     char stack_str[MAX_INPUT_LENGTH];
-    stack_to_string(&stack, stack_str, sizeof(stack_str));
+    stack_to_string(stack, stack_str, sizeof(stack_str));
     
     // Get operation representation (e.g., S6, R7, Accept, Reject)
     char operation[MAX_OPERATION_NAME];
@@ -277,14 +285,11 @@ void automatasra_driver(LanguageV2 * language){
         return;
     }
 
-    // int returned_copy = returned;
-    ActionType operation = ACTION_ACCEPT; //Not sure if accept or reject if empty file
-
     while (returned != EOTokenList){ //Anar llegint el fitxer
         
         ActionType operation = update_automatasra(language->sra, tokn, language);
 
-        if (returned == ACTION_REJECT || returned == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
+        if (operation == ACTION_REJECT || operation == ACTION_ERROR) { // L'autòmata ha rebutjat la llista de tokens
             break;
         }
         tokn = read_next_token(language->sra, &returned); //Last token will be EOF token
@@ -294,7 +299,7 @@ void automatasra_driver(LanguageV2 * language){
         ParseAction pact;
         pact.type = ACTION_REJECT;
         pact.value = -1; //change by global variable
-        write_update_to_output(*language->sra->stack, tokn, pact);
+        write_update_to_output(language->sra->stack, tokn, pact);
     }
     
     // if(returned_copy != EOTokenList && language->sra->tokens == 0){ //Case of file with only one character, we do not handle this case

@@ -81,9 +81,10 @@ int load_tokens_from_file(const char* filename) {
 }
 
 /* -------------------------------------------------------------------------
- * temporal sets up the scanner's required state (ifile, line counters, ofile) to run automata_driver() over the .c file
- * will write the scanner's output to /dev/null to avoid polluting the parser's output file, but the important side-effect is that add_token_to_list() fills status.all_tokens.
+ * load_tokens_from_scan: requires scanner modules (not available in parser build).
+ * Kept here for reference; enable when scanner is linked into parser.
  * ------------------------------------------------------------------------- */
+#if 0
 static int load_tokens_from_scan(void) {
     // Open the .c source file for the scanner to read
     status.ifile = fopen(status.ifile_name, "r");
@@ -116,12 +117,14 @@ static int load_tokens_from_scan(void) {
     status.ofile = saved_ofile;
     return CORRECT_RETURN;
 }
+#endif
 
 /* -------------------------------------------------------------------------
- * Detects the file extension
  *   .cscn  -> load_tokens_from_file()   (parse scanner output file)
  *   .c     -> load_tokens_from_scan()   (run scanner in-memory)
+ *   Requires scanner modules; guarded until scanner is linked into parser.
  * ------------------------------------------------------------------------- */
+#if 0
 int load_tokens(void) {
     char path[MAX_FILENAME], filename[MAX_FILENAME], extension[MAXFILEEXT];
     split_path(status.ifile_name, path, filename, extension);
@@ -137,3 +140,4 @@ int load_tokens(void) {
         return ERROR_RETURN;
     }
 }
+#endif

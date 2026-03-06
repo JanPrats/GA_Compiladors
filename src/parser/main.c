@@ -120,41 +120,44 @@ int main(int argc, char *argv[]) {
             status.all_tokens.count, status.ifile_name);
 
     /* --- Load language definition from selected file -------------------- */
-    LanguageV2 language;
-    memset(&language, 0, sizeof(language));
+    LanguageV2 *language = (LanguageV2 *)calloc(1, sizeof(LanguageV2));
+    if (!language) {
+        fprintf(stderr, "Error: could not allocate LanguageV2\n");
+        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+        return 1;
+    }
 
-    if (load_language(language_file, &language) != CORRECT_RETURN) { //To be done
+    if (load_language(language_file, language) != CORRECT_RETURN) { //To be done
         fprintf(stderr, "Error: could not load language from '%s'\n", language_file);
+        free(language);
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
     fprintf(status.ofile, "[INFO] Language loaded from '%s': %d terminals, %d productions\n",
-            language_file, language.num_terminals, language.num_productions);
-
-    /* --- Build parse table (action + goto) from loaded language -------- */
-    // AutomataDFA  dfa;
-    // ParseTable   table;
-    // memset(&dfa, 0, sizeof(dfa));
-    // memset(&table, 0, sizeof(table));
-
-    // if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) { //To be done
-    //     fprintf(stderr, "Error: could not build parse table\n");
-    //     if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
-    //     return 1;
-    // }
+            language_file, language->num_terminals, language->num_productions);
 
     /* --- Initialize SRA and run parser driver -------------------------- */
-    AutomataSRA *sra = initializeSRA(language.sra->dfa, &language.sra->table); //Revisar si solo necesita language de input
+    /* load_language ha creat un SRA placeholder amb taula + DFA però sense stack.
+       initializeSRA crea un SRA complet (copia taula, reutilitza DFA, crea stack). */
+    AutomataDFA *dfa = language->sra->dfa;     /* guardem punter al DFA (malloc'd) */
+    AutomataSRA *sra = initializeSRA(dfa, &language->sra->table);
     if (!sra) {
         fprintf(stderr, "Error: could not initialize SRA\n");
+        free(dfa);
+        free(language->sra);
+        free(language);
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
         return 1;
     }
 
-    language.sra = sra;
-    automatasra_driver(&language);
-    destroySRA(sra); //revisar
+    free(language->sra);          /* alliberar SRA placeholder (no tenia stack) */
+    language->sra = sra;          /* assignar el SRA complet */
+    automatasra_driver(language);
+    destroySRA(sra);             /* allibera stack + SRA struct (no el DFA) */
+    language->sra = NULL;
+    free(dfa);                   /* alliberar DFA creat a load_language */
+    free(language);              /* alliberar LanguageV2 */
 
     /* --- Close output file --------------------------------------------- */
     if (status.ofile) {
