@@ -8,7 +8,7 @@ void destroySRA(AutomataSRA* sra);
 
 ParseAction get_next_action(LanguageV2* language, Token token, RuleItemType* type);
 
-void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens);
+void reduce_rule(Stack* stack, RuleV2* rule, Token *lhs, int *num_tokens, LanguageV2 * language);
 
 ActionType update_automatasra(AutomataSRA *a, Token token, LanguageV2* language);
 
