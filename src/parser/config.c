@@ -18,7 +18,7 @@
  * - Non-recognized tokens
  *
  * Team: GA
- * Contributor/s: Pol García
+ * Contributor/s: Pol García, Jan Prats
  * -----------------------------------------------------------------------------
  */
 
