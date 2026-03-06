@@ -82,12 +82,12 @@ static int init_parser(const char *input_file) {
 int main(int argc, char *argv[]) {
 
     /* --- Argument check ------------------------------------------------ */
-    if (argc < 2) {
+    if (argc < 2) { // Check if there are enough args
         show_help();
         return 1;
     }
 
-    if (strcmp(argv[1], HELP_F) == 0) {
+    if (strcmp(argv[1], HELP_F) == 0) { // help flag?
         status.help = true;
         show_help();
         return 0;
@@ -121,19 +121,19 @@ int main(int argc, char *argv[]) {
             language.num_terminals, language.num_productions);
 
     /* --- Build parse table (action + goto) from loaded language -------- */
-    AutomataDFA  dfa;
-    ParseTable   table;
-    memset(&dfa, 0, sizeof(dfa));
-    memset(&table, 0, sizeof(table));
+    // AutomataDFA  dfa;
+    // ParseTable   table;
+    // memset(&dfa, 0, sizeof(dfa));
+    // memset(&table, 0, sizeof(table));
 
-    if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) { //To be done
-        fprintf(stderr, "Error: could not build parse table\n");
-        if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
-        return 1;
-    }
+    // if (build_parse_table(&language, &dfa, &table) != CORRECT_RETURN) { //To be done
+    //     fprintf(stderr, "Error: could not build parse table\n");
+    //     if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
+    //     return 1;
+    // }
 
     /* --- Initialize SRA and run parser driver -------------------------- */
-    AutomataSRA *sra = initializeSRA(&dfa, &table);
+    AutomataSRA *sra = initializeSRA(language.sra->dfa, &language.sra->table); //Revisar si solo necesita language de input
     if (!sra) {
         fprintf(stderr, "Error: could not initialize SRA\n");
         if (status.ofile) { fclose(status.ofile); status.ofile = NULL; }
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 
     language.sra = sra;
     automatasra_driver(&language);
-    destroySRA(sra);
+    destroySRA(sra); //revisar
 
     /* --- Close output file --------------------------------------------- */
     if (status.ofile) {
