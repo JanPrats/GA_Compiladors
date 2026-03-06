@@ -2,6 +2,24 @@
 #define MODULE_PARSER_H
 #include "../config.h"
 
+/* -----------------------------------------------------------------------------
+ * module_parser.h
+ *
+ * Header for the parser engine (SRA) module.
+ * Declares the entry points used by the parser driver and the SRA engine
+ * implemented in `module_parser.c`.
+ *
+ * Responsibilities:
+ *  - initialize and destroy AutomataSRA structures
+ *  - query the ACTION/GOTO tables for next actions
+ *  - perform reduce operations and stack updates
+ *  - driver to run the SRA over a loaded token list
+ *
+ * Team: GA
+ * Contributor/s: Andrea Sallo
+ * -------------------------------------------------------------------------- */
+
+
 void initialize_SRA_DFA_stack(LanguageV2 * language);
 
 void destroy_language(LanguageV2* language);

@@ -2,6 +2,21 @@
 #include <string.h>
 #include "module_parser.h"
 
+/* -----------------------------------------------------------------------------
+ * module_parser.c
+ *
+ *
+ * Responsibilities:
+ *  - initialize and destroy AutomataSRA structures
+ *  - query the ACTION/GOTO tables for next actions
+ *  - perform reduce operations and stack updates
+ *  - driver to run the SRA over a loaded token list
+ *
+ * Team: GA
+ * Contributor/s: Andrea Sallo, Pol Garcia, Jan Prats
+ * -------------------------------------------------------------------------- */
+
+
 void initialize_SRA_DFA_stack(LanguageV2* language) {
     language->sra->dfa->start_state   = 0;
     language->sra->dfa->current_state = 0;
